@@ -1,36 +1,48 @@
 <template>
   <div class="login-register-box">
     <transition name="el-zoom-in-top">
-      <el-form :model="loginForm" :rules="loginRules" ref="loginForm" label-position="left" label-width="70px" class="login-wrap" status-icon v-show="showLogin">
+      <el-form :model="loginForm" :rules="loginRules" ref="loginForm" label-position="left" label-width="70px"
+        class="login-wrap" status-icon v-show="showLogin">
         <h3>用户登录</h3>
-				<el-form-item label="用户名" prop="username">
-        	<el-input v-model="loginForm.username" placeholder="请输入用户名" prefix-icon="el-icon-user"></el-input>
-  			</el-form-item>
-				<el-form-item label="密码" prop="password">
-        	<el-input v-model="loginForm.password" placeholder="请输入密码" prefix-icon="el-icon-lock" show-password></el-input>
-  			</el-form-item>
-				<el-button v-on:click="login" type="primary" round>登录</el-button>
-  			<el-link v-on:click="ToRegister">没有账号？马上注册</el-link>
+        <el-form-item label="用户名" prop="username">
+          <el-input v-model="loginForm.username" placeholder="请输入用户名" prefix-icon="el-icon-user"></el-input>
+        </el-form-item>
+        <el-form-item label="密码" prop="password">
+          <el-input v-model="loginForm.password" placeholder="请输入密码" prefix-icon="el-icon-lock" show-password>
+          </el-input>
+        </el-form-item>
+        <el-button v-on:click="login" type="primary" round>登录</el-button>
+        <el-link v-on:click="ToRegister">没有账号？马上注册</el-link>
       </el-form>
     </transition>
 
     <transition name="el-zoom-in-top">
-      <el-form :model="registrationForm" :rules="registrationRules" ref="registrationForm" label-position="left" label-width="80px" class="register-wrap" status-icon v-show="showRegister">
+      <el-form :model="registrationForm" :rules="registrationRules" ref="registrationForm" label-position="left"
+        label-width="80px" class="register-wrap" status-icon v-show="showRegister">
         <h3>用户注册</h3>
-				<el-form-item label="用户名" prop="newUsername">
-        	<el-input v-model="registrationForm.newUsername" placeholder="请输入用户名" prefix-icon="el-icon-user"></el-input>
+        <el-form-item label="用户名" prop="newUsername">
+          <el-input v-model="registrationForm.newUsername" placeholder="请输入用户名" prefix-icon="el-icon-user"></el-input>
         </el-form-item>
-				<el-form-item label="密码" prop="newPassword">
-        	<el-input v-model="registrationForm.newPassword" placeholder="请输入密码" prefix-icon="el-icon-lock" show-password></el-input>
+        <el-form-item label="密码" prop="newPassword">
+          <el-input v-model="registrationForm.newPassword" placeholder="请输入密码" prefix-icon="el-icon-lock" show-password>
+          </el-input>
         </el-form-item>
-				<el-form-item label="重复密码" prop="newConfirmPassword">
-        	<el-input v-model="registrationForm.newConfirmPassword" placeholder="再次输入密码" prefix-icon="el-icon-lock" show-password></el-input>
+        <el-form-item label="重复密码" prop="newConfirmPassword">
+          <el-input v-model="registrationForm.newConfirmPassword" placeholder="再次输入密码" prefix-icon="el-icon-lock"
+            show-password></el-input>
         </el-form-item>
-				<el-form-item label="邮箱" prop="newEmail">
-        	<el-input v-model="registrationForm.newEmail" placeholder="请输入邮箱" prefix-icon="el-icon-message"></el-input>
+        <el-form-item label="邮箱" prop="newEmail">
+          <el-input v-model="registrationForm.newEmail" placeholder="请输入邮箱" prefix-icon="el-icon-message"></el-input>
         </el-form-item>
-				<el-form-item label="电话" prop="newPhone">
-        	<el-input v-model="registrationForm.newPhone" placeholder="请输入手机号码" prefix-icon="el-icon-mobile-phone"></el-input>
+        <el-form-item label="电话" prop="newPhone">
+          <el-input v-model="registrationForm.newPhone" placeholder="请输入手机号码" prefix-icon="el-icon-mobile-phone">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="职业" prop="newRole">
+          <el-radio-group v-model="registrationForm.newRole">
+            <el-radio-button :label="'student'">学生</el-radio-button>
+            <el-radio-button :label="'teacher'">教师</el-radio-button>
+          </el-radio-group>
         </el-form-item>
         <el-button v-on:click="register" type="primary" round>注册</el-button>
         <el-link v-on:click="ToLogin">已有账号？马上登录</el-link>
@@ -43,29 +55,29 @@
 	body {}
 
 	h3 {
-		font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+	  font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
 	}
 
 	.login-register-box {
-		margin-top: 50px;
+	  margin-top: 50px;
 	}
 
 	.login-wrap,
 	.register-wrap {
-		border-radius: 20px;
-		text-align: center;
-		background: #FFFFFF;
-		width: 400px;
-		height: auto;
-		margin: 10px auto;
-		padding: 25px 25px 25px 30px;
+	  border-radius: 20px;
+	  text-align: center;
+	  background: #FFFFFF;
+	  width: 400px;
+	  height: auto;
+	  margin: 10px auto;
+	  padding: 25px 25px 25px 30px;
 	}
 
 	.el-button {
-		width: 300px;
-		height: 40px;
-		margin: 30px 30px;
-		border: none;
+	  width: 300px;
+	  height: 40px;
+	  margin: 30px 30px;
+	  border: none;
 	}
 </style>
 
@@ -99,7 +111,8 @@ export default {
 				newPassword: '',
 				newConfirmPassword: '',
 				newEmail: '',
-				newPhone: ''
+        newPhone: '',
+        newRole: ''
 			},
 			loginRules: {
 				username: [
@@ -127,13 +140,17 @@ export default {
 				newPhone: [
 					{ required: true, message: '请输入电话', trigger: 'blur' },
 					{ len: 11, message: '电话格式错误', trigger: 'blur' }
-				]
+        ],
+        newRole: [
+					{ required: true, message: '请选择职业', trigger: 'blur' },
+        ]
 			}
 		}
 	},
 
 	// 如果获取cookie成功，则跳转到主页，无需登录
 	mounted() {
+    // TODO: cookie
 		if (getCookie('username')) {
 			this.$router.push('/home')
 		}
@@ -145,7 +162,8 @@ export default {
 
 	methods: {
 		ToLogin() {
-			this.showRegister = false
+      this.showRegister = false;
+      this.$refs['registrationForm'].resetFields();
 			setTimeout(() => {
 				this.showLogin = true
 			}, 500);
@@ -203,7 +221,8 @@ export default {
 		},
 
 		ToRegister() {
-			this.showLogin = false;
+      this.showLogin = false;
+      this.$refs['loginForm'].resetFields();
 			setTimeout(() => {
 				this.showRegister = true;
 			}, 500);
@@ -218,12 +237,12 @@ export default {
 							type: 'warning'
 						});
 					} else {
-						// TODO: 增加角色数据
 						this.axios.post(this.serverendURL + '/registration', {
 							username: this.newUsername,
 							password: this.newPassword,
 							email: this.newEmail,
-							phone: this.newPhone
+              phone: this.newPhone,
+              role: this.newRole
 						})
 						.then((res) => {
 							if (res.data.status_code === 201) {
