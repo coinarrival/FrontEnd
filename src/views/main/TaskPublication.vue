@@ -14,9 +14,11 @@
   	  </el-form-item>
   	  <el-divider></el-divider>
 
-  	  <el-button type="primary" icon="el-icon-upload">发布任务</el-button>
+			<el-button-group>
+  	  	<el-button type="primary" icon="el-icon-upload">发布任务</el-button>
+  	  	<el-button type="info" icon="el-icon-delete">清空</el-button>
+			</el-button-group>
 
-  	  <el-button type="info" icon="el-icon-delete">清空</el-button>
   	</el-form>
 </template>
 
