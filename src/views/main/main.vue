@@ -9,6 +9,10 @@
 			  <task-publication></task-publication>
 			</el-tab-pane>
 			
+			<el-tab-pane label="发布问卷">
+				<survey-publication></survey-publication>
+			</el-tab-pane>
+
 			<el-tab-pane label="我的钱包">
 				<user-wallet></user-wallet>
 			</el-tab-pane>
@@ -22,10 +26,14 @@
 
 <style>
 .main-box{
-	width: 80%;
 	height: 80%;
-	margin: 20px auto;
+	margin: 0 auto;
 	border-radius: 20px;
+}
+
+.el-tabs--border-card>.el-tabs__header .el-tabs__item.is-active {
+	font-weight: bold;
+	font-size: 15px;
 }
 </style>
 
@@ -34,11 +42,13 @@ import TaskList from './TaskList.vue'
 import TaskPublication from './TaskPublication.vue'
 import UserInfo from './UserInfo.vue'
 import UserWallet from './UserWallet.vue'
+import SurveyPublication from './SurveyPublication.vue'
 
 export default{
 	components: {
 		TaskList,
 		TaskPublication,
+		SurveyPublication,
 		UserInfo,
 		UserWallet,
 	},
