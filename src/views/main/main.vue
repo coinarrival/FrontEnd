@@ -22,10 +22,14 @@
 
 <style>
 .main-box{
-	width: 80%;
 	height: 80%;
-	margin: 20px auto;
+	margin: 0 auto;
 	border-radius: 20px;
+}
+
+.el-tabs--border-card>.el-tabs__header .el-tabs__item.is-active {
+	font-weight: bold;
+	font-size: 15px;
 }
 </style>
 

@@ -3,14 +3,18 @@
     <el-col>
       <el-row>
         <el-table :data="taskList" border stripe height="600px" style="width: 100%" highlight-current-row
-          @current-change="acceptTheTask">
-          <el-table-column prop="name" label="任务名称" align="center" width="300px">
+          @row-click="taskClick">
+          <el-table-column prop="title" label="任务名称" align="center">
           </el-table-column>
-          <el-table-column prop="description" label="任务描述" header-align="center" width="400px">
+          <el-table-column prop="issuer" label="发起者" align="center" width="150px">
           </el-table-column>
-          <el-table-column prop="bounty" label="任务报酬" align="center" sortable width="150px">
+          <el-table-column prop="reward" label="任务报酬" align="center" sortable width="150px">
           </el-table-column>
-          <el-table-column prop="state" label="任务状态" align="center" :filters="stateFilters" :filter-method="filterState"
+          <el-table-column prop="deadline" label="期限" align="center" sortable width="150px">
+          </el-table-column>
+          <el-table-column prop="repeatTime" label="可接受人数" align="center" width="150px">
+          </el-table-column>
+          <el-table-column prop="state" label="任务状态" align="center" width="150px" :filters="stateFilters" :filter-method="filterState"
             filter-placement="bottom-end">
             <template slot-scope="scope">
               <el-tag :type="stateTag[scope.row.state]" effect="dark" disable-transitions>
@@ -26,6 +30,33 @@
         </el-pagination>
       </el-row>
     </el-col>
+
+    <el-dialog :visible.sync="taskDetailVisible">
+      <el-form :model="taskInfo" :inline="true" disabled>
+        <el-form-item label="任务名">
+          <el-input v-model="taskInfo.title"></el-input>
+        </el-form-item>
+        <el-form-item label="报酬">
+          <el-input v-model="taskInfo.reward"></el-input>
+        </el-form-item>
+        <el-form-item label="发起者">
+          <el-input v-model="taskInfo.issuer"></el-input>
+        </el-form-item>
+        <el-form-item label="期限">
+          <el-input v-model="taskInfo.deadline"></el-input>
+        </el-form-item>
+        <el-form-item label="可接受人数">
+          <el-input-number v-model="taskInfo.repeatTime" controls-position="right"></el-input-number>
+        </el-form-item>
+      </el-form>
+      <div class="taskDetail">
+        {{taskInfo.content}}
+      </div>
+      <el-button-group>
+        <el-button v-if="taskInfo.isCompleted" type="success" round disabled>接受任务</el-button>
+        <el-button v-else type="success" round>接受任务</el-button>
+      </el-button-group>
+    </el-dialog>
   </div>
 </template>
 
@@ -47,130 +78,144 @@ export default {
       }, {
         text: '可承接',
         value: '可承接'
-      }, {
-        text: '我发起的',
-        value: '我发起的'
-      }, {
-        text: '已承接',
-        value: '已承接'
       }],
       stateTag: {
         '已过期': 'warning',
-        '可承接': 'success',
-        '我发起的': 'info',
-        '已承接': 'danger',
+        '可承接': 'success'
       },
+
+      selectedTaskID: '',
       taskList: [{
-        name: '取快递',
-        description: '帮忙从蜂巢柜取快递',
-        bounty: 20,
-        state: '我发起的'
-      }, {
-        name: '《计算机网络》第六版PDF',
-        description: '急求电子书',
-        bounty: 5,
-        state: '可承接'
-      }, {
-        name: '行人数据',
-        description: '数据收集，报酬丰厚',
-        bounty: 50,
+        taskID: "123",
+        title: '取快递',
+        type: "EXAMPLE",
+        issuer: "EXAMPLE",
+        reward: 123.123,
+        deadline: "YYYY-MM-DD",
+        repeatTime: 15,
         state: '已过期'
       }, {
-        name: '取快递2',
-        description: '帮忙从蜂巢柜取快递2',
-        bounty: 20,
-        state: '已承接'
-      }, {
-        name: '送钱',
-        description: '随缘送648',
-        bounty: 648,
-        state: '已承接'
-      }, {
-        name: '行人数据2',
-        description: '数据收集，报酬丰厚',
-        bounty: 50,
+        taskID: "123",
+        title: '《计算机网络》第六版PDF',
+        type: "EXAMPLE",
+        issuer: "EXAMPLE",
+        reward: 123.123,
+        deadline: "YYYY-MM-DD",
+        repeatTime: 15,
         state: '可承接'
       }, {
-        name: '行人数据2',
-        description: '数据收集，报酬丰厚',
-        bounty: 50,
+        taskID: "123",
+        title: '行人数据',
+        type: "EXAMPLE",
+        issuer: "EXAMPLE",
+        reward: 123.123,
+        deadline: "YYYY-MM-DD",
+        repeatTime: 15,
+        state: '已过期'
+      }, {
+        taskID: "123",
+        title: '取快递2',
+        type: "EXAMPLE",
+        issuer: "EXAMPLE",
+        reward: 123.123,
+        deadline: "YYYY-MM-DD",
+        repeatTime: 15,
         state: '可承接'
       }, {
-        name: '行人数据2',
-        description: '数据收集，报酬丰厚',
-        bounty: 50,
+        taskID: "123",
+        title: '送钱',
+        type: "EXAMPLE",
+        issuer: "EXAMPLE",
+        reward: 123.123,
+        deadline: "YYYY-MM-DD",
+        repeatTime: 15,
         state: '可承接'
       }, {
-        name: '行人数据2',
-        description: '数据收集，报酬丰厚',
-        bounty: 50,
+        taskID: "123",
+        title: '行人数据2',
+        type: "EXAMPLE",
+        issuer: "EXAMPLE",
+        reward: 123.123,
+        deadline: "YYYY-MM-DD",
+        repeatTime: 15,
         state: '可承接'
       }, {
-        name: '行人数据2',
-        description: '数据收集，报酬丰厚',
-        bounty: 50,
+        taskID: "123",
+        title: '行人数据2',
+        type: "EXAMPLE",
+        issuer: "EXAMPLE",
+        reward: 123.123,
+        deadline: "YYYY-MM-DD",
+        repeatTime: 15,
         state: '可承接'
       }, {
-        name: '行人数据2',
-        description: '数据收集，报酬丰厚',
-        bounty: 50,
+        taskID: "123",
+        title: '行人数据2',
+        type: "EXAMPLE",
+        issuer: "EXAMPLE",
+        reward: 123.123,
+        deadline: "YYYY-MM-DD",
+        repeatTime: 15,
         state: '可承接'
       }, {
-        name: '行人数据2',
-        description: '数据收集，报酬丰厚',
-        bounty: 50,
+        taskID: "123",
+        title: '行人数据2',
+        type: "EXAMPLE",
+        issuer: "EXAMPLE",
+        reward: 123.123,
+        deadline: "YYYY-MM-DD",
+        repeatTime: 15,
         state: '可承接'
       }, {
-        name: '行人数据2',
-        description: '数据收集，报酬丰厚',
-        bounty: 50,
+        taskID: "123",
+        title: '行人数据2',
+        type: "EXAMPLE",
+        issuer: "EXAMPLE",
+        reward: 123.123,
+        deadline: "YYYY-MM-DD",
+        repeatTime: 15,
         state: '可承接'
       }, {
-        name: '行人数据2',
-        description: '数据收集，报酬丰厚',
-        bounty: 50,
+        taskID: "123",
+        title: '行人数据2',
+        type: "EXAMPLE",
+        issuer: "EXAMPLE",
+        reward: 123.123,
+        deadline: "YYYY-MM-DD",
+        repeatTime: 15,
         state: '可承接'
       }, {
-        name: '行人数据2',
-        description: '数据收集，报酬丰厚',
-        bounty: 50,
+        taskID: "123",
+        title: '行人数据2',
+        type: "EXAMPLE",
+        issuer: "EXAMPLE",
+        reward: 123.123,
+        deadline: "YYYY-MM-DD",
+        repeatTime: 15,
         state: '可承接'
       }, {
-        name: '行人数据2',
-        description: '数据收集，报酬丰厚',
-        bounty: 50,
+        taskID: "123",
+        title: '行人数据2',
+        type: "EXAMPLE",
+        issuer: "EXAMPLE",
+        reward: 123.123,
+        deadline: "YYYY-MM-DD",
+        repeatTime: 15,
         state: '可承接'
-      }, {
-        name: '行人数据2',
-        description: '数据收集，报酬丰厚',
-        bounty: 50,
-        state: '可承接'
-      }, {
-        name: '行人数据2',
-        description: '数据收集，报酬丰厚',
-        bounty: 50,
-        state: '可承接'
-      }, {
-        name: '行人数据2',
-        description: '数据收集，报酬丰厚',
-        bounty: 50,
-        state: '可承接'
-      }, {
-        name: '行人数据2',
-        description: '数据收集，报酬丰厚',
-        bounty: 50,
-        state: '可承接'
-      }, {
-        name: '行人数据2',
-        description: '数据收集，报酬丰厚',
-        bounty: 50,
-        state: '可承接'
-      }, {
-        name: '行人数据2',
-        description: '数据收集，报酬丰厚',
-        bounty: 50,
-        state: '可承接'
-      }]
+      }],
+
+      taskDetailVisible: false,
+      taskInfo: {
+        id: "",
+        title: "EXAMPLE",
+        content: "EXAMPLE",
+        type: "EXAMPLE",
+        issuer: "EXAMPLE",
+        reward: 999.999,
+        deadline: "YYYY-MM-DD",
+        repeatTime: 15,
+        isCompleted: false
+      },
     }
   },
   methods: {
@@ -184,6 +229,13 @@ export default {
       .then((res) => {
         if (res.data.status_code == 200) {
           this.taskList = res.data.tasks;
+          this.taskList.forEach(element => {
+            if (new Date(element.deadline) < new Date()) {
+              element.state = '已过期';
+            } else {
+              element.state = '可承接';
+            }
+          });
           this.maxPages = res.data.max_pages;
         } else if (res.data.status_code == 416) {
           this.$message.error('请求任务数据错误');
@@ -197,17 +249,30 @@ export default {
       });
     },
 
-    // TODO: handle task click
-    acceptTheTask() {
-      this.$alert('领取任务', '任务名称', {
-        confirmButtonText: '确定',
-        callback: action => {
-          this.$message({
-            type: 'info',
-            message: `action: ${ action }`
-          });
-        }
-      });
+    /**
+     * Handle the click event of the task list cell
+     * 
+     * @param {object} row clicked row
+     * @param {object} column clicked column
+     * @param {object} event click event
+     */
+    taskClick(row, column, event) {
+      //TODO: 处理问卷类型内容
+      this.axios.get(`${this.serverendURL}/task?taskID=${row.taskID}`)
+        .then((res) => {
+          if (res.data.status_code == 200) {
+            this.taskInfo = res.data.data;
+          } else if (res.data.status_code == 404) {
+            this.$message.error('任务已删除');
+          } else {
+            this.$message.error('服务器错误...请稍后重试');
+          }
+          })
+        .catch((err) => {
+          this.$message.error('服务器错误...请稍后重试');    
+        });
+      this.taskDetailVisible = true;
+      this.taskInfo.title = row.title;
     },
 
     /**
@@ -216,7 +281,6 @@ export default {
      * @param {int} pageNum the changed page number
      */
     handlePageChange(pageNum) {
-      console.log(pageNum);
       this.loadTaskwithPage(pageNum);
     },
 
@@ -238,6 +302,10 @@ export default {
 
 .el-table::before {
   height: 0px;
+}
+
+.taskDetail {
+  margin: 0 0 20px 0;
 }
 
 </style>

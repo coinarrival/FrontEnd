@@ -28,6 +28,7 @@ export default {
   props: {},
   data() {
     return {
+			formLabelWidth: '120px',
 			task: {
 				name: '',
 				description: '',

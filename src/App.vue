@@ -1,17 +1,25 @@
 <template>
   <div id="app">
-    <el-row :gutter="20" class="header">
-      <el-col :span="8">
-        <div class="banner">{{ msg1 }}</div>
-      </el-col>
-      <el-col :span="8">
-        <h2>{{ msg1 }}</h2>
-      </el-col>
-      <el-col :span="8">
-        <div class="banner">{{ msg1 }}</div>
-      </el-col>
-    </el-row>
-    <router-view></router-view>
+    <el-container>
+      <el-header>
+        <el-row :gutter="20" class="header">
+          <el-col :span="8">
+            <div class="banner">{{ msg1 }}</div>
+          </el-col>
+          <el-col :span="8">
+            <h2>{{ msg1 }}</h2>
+          </el-col>
+          <el-col :span="8">
+            <div class="banner">{{ msg1 }}</div>
+          </el-col>
+        </el-row>
+      </el-header>
+
+      <el-main>
+        <router-view></router-view>
+      </el-main>
+      <el-footer height="0"></el-footer>
+    </el-container>
   </div>
 </template>
 
@@ -60,5 +68,9 @@ export default {
 
   .header {
     background-color: #FFFFFF44;
+  }
+
+  .el-header {
+    padding: 0 10px !important;
   }
 </style>
