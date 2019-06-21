@@ -9,6 +9,10 @@
 			  <task-publication></task-publication>
 			</el-tab-pane>
 			
+			<el-tab-pane label="发布问卷">
+				<survey-publication></survey-publication>
+			</el-tab-pane>
+
 			<el-tab-pane label="我的钱包">
 				<user-wallet></user-wallet>
 			</el-tab-pane>
@@ -38,11 +42,13 @@ import TaskList from './TaskList.vue'
 import TaskPublication from './TaskPublication.vue'
 import UserInfo from './UserInfo.vue'
 import UserWallet from './UserWallet.vue'
+import SurveyPublication from './SurveyPublication.vue'
 
 export default{
 	components: {
 		TaskList,
 		TaskPublication,
+		SurveyPublication,
 		UserInfo,
 		UserWallet,
 	},
