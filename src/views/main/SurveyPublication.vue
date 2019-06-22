@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-form :model="survey" ref="survey" label-width="100px" style="width: 500px; margin: 20px auto;">
+    <el-form :model="survey" ref="survey" label-width="100px" style="width: 500px; margin: 20px auto;" @submit.native.prevent>
       <el-form-item prop="name" label="问卷名" :rules="[{ required: true, message: '请输入问卷名', trigger: 'blur' }]">
         <el-input v-model="survey.name"></el-input>
       </el-form-item>
@@ -35,7 +35,7 @@
 
     <el-dialog :visible.sync="infoVisible" :close-on-click-modal="false" :show-close="false" :append-to-body="true"
       @close="resetForm('questionInfo')">
-      <el-form :model="questionInfo" ref="questionInfo" style="width: 280px; margin: 20px auto;">
+      <el-form :model="questionInfo" ref="questionInfo" style="width: 280px; margin: 20px auto;" @submit.native.prevent>
         <el-form-item label="问题名称" prop="name" :rules="{ required: true, message: '', trigger: 'blur' }">
           <el-input v-model="questionInfo.name"></el-input>
         </el-form-item>
@@ -60,6 +60,7 @@ export default {
   props: {},
   data() {
     return {
+      serverendURL: 'http://localhost:3000',
       survey: {
         name: '问卷',
         reward: 10,
@@ -90,6 +91,7 @@ export default {
           });
           this.infoVisible = false;
         } else {
+          // TODO: write logic statements or remove this block
           return;
         }
       });
@@ -118,7 +120,38 @@ export default {
      * Post the survey form data to the server
      */
     postSurvey() {
-      //TODO: post form data
+      let request_body = {
+        'title': this.survey.name,
+        'content': JSON.stringify(this.survey.questions),
+        'type': 'survey',
+        'reward': this.survey.reward,
+        'repeatTime': this.survey.repeatTime,
+        'deadline': this.survey.deadline,
+      };
+      this.axios.post(`${this.serverendURL}/task`, request_body)
+        .then(response => {
+          if (response.status == 200) {
+            switch(response.data.status_code) {
+              case 201:
+                this.$message.success(`创建成功，您的任务 ID 为 ${response.data.data.taskID}`);
+                resetForm('survey')
+                break;
+              case 400:
+                this.$message.error('错误：网页运行异常');
+                break;
+              case 403:
+                this.$message.warning('创建失败：余额不足');
+                break;
+              default:
+                this.$message.error('错误：未知的返回状态');
+            }
+          } else {
+            this.$message.error('错误：未知的返回状态');
+          }
+        })
+        .catch(error => {
+          this.$message.error('错误：未知的服务端错误');
+        })
     },
 
     /**
