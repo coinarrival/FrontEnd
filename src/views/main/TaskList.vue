@@ -12,7 +12,7 @@
           </el-table-column>
           <el-table-column prop="deadline" label="期限" align="center" sortable width="150px">
           </el-table-column>
-          <el-table-column prop="repeatTime" label="可接受人数" align="center" width="150px">
+          <el-table-column prop="repeatTime" label="可完成次数" align="center" width="150px">
           </el-table-column>
           <el-table-column prop="state" label="任务状态" align="center" width="150px" :filters="stateFilters" :filter-method="filterState"
             filter-placement="bottom-end">
@@ -45,7 +45,7 @@
         <el-form-item label="期限">
           <el-input v-model="taskInfo.deadline"></el-input>
         </el-form-item>
-        <el-form-item label="可接受人数">
+        <el-form-item label="可完成次数">
           <el-input-number v-model="taskInfo.repeatTime" controls-position="right"></el-input-number>
         </el-form-item>
       </el-form>
@@ -191,6 +191,7 @@ export default {
       });
       this.taskDetailVisible = true;
       this.taskInfo.title = row.title;
+      this.taskInfo.isCompleted = (row.state != '可承接');
     },
 
     /**
