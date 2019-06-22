@@ -1,5 +1,6 @@
 <template>
   <div>
+    <!-- 已接受任务列表 -->
     <el-table :data="acceptList" border stripe height="600px" style="width: 100%" highlight-current-row>
       <el-table-column prop="title" label="任务名称" align="center">
       </el-table-column>
@@ -20,7 +21,7 @@
       <el-table-column prop="state" label="操作" align="center" width="150px">
         <template slot-scope="scope">
           <!-- TODO: 更改判断条件 -->
-          <el-button type="danger" :disabled="scope.row.state !== '可承接'" @click.stop="cancelTask">放弃任务</el-button>
+          <el-button type="danger" :disabled="scope.row.state !== '可承接'" @click.stop="cancelTask(scope.row)">放弃任务</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -31,11 +32,18 @@
 </template>
 
 <script>
+import Config from '../../../assets/js/config'
+
 export default {
   name: 'TaskManagerAccept',
   props: {},
+  mounted() {
+    this.loadTaskwithPage(1);
+  },
   data() {
     return {
+      // TODO: delete the static data once server on
+      // accept task list variable
       acceptPages: 10,
       acceptList: [{
         taskID: "123",
@@ -82,27 +90,84 @@ export default {
     }
   },
   methods: {
-    handleAcceptPageChange() {
-
+    /**
+     * Retrieve the accept task list within page from sever
+     * 
+     * @param {int} page the needed page
+     */
+    loadTaskwithPage(page) {
+      this.axios.get(`${Config.serverendURL}/accepted_tasks`, {
+        params: {
+          'page': page
+        }
+      }).then((res) => {
+        if (res.data.status_code == 200) {
+          this.createdList = res.data.tasks;
+          this.createdList.forEach(element => {
+            if (new Date(element.deadline) < new Date()) {
+              element.state = '已过期';
+            } else if (element.isCompleted){
+              element.state = '已完成';
+            } else {
+              element.state = '可承接';
+            }
+          });
+          this.createdPages = res.data.max_pages;
+        } else if (res.data.status_code == 401) {
+          this.$message.error('请重新登录');
+        } else if (res.data.status_code == 416) {
+          this.$message.error('请求任务数据错误');
+          this.createdPages = res.data.max_pages;
+        } else {
+          this.$message.error('请求任务数据错误');
+        }
+      }).catch((err) => {
+        this.$message.error('请求任务数据错误');
+        console.log(err);
+      });
     },
 
-    cancelTask() {
+    /**
+     * Cancel an accept task
+     * 
+     * @param {object} row the task row with its info
+     */
+    cancelTask(row) {
       this.$confirm('是否放弃该任务', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         roundButton: true,
         type: 'warning'
       }).then(() => {
-        this.$message({
-          type: 'success',
-          message: '放弃成功!'
+        this.axios.delete(`${Config.serverendURL}/acceptance`, {
+          params: {
+            'taskID': row.taskID
+          }
+        }).then((res) => {
+          if (res.data.status_code == 200) {
+            this.$message.success('删除成功');
+          } else if (res.data.status_code == 400) {
+            this.$message.warning('信息错误，请重试...');
+          } else if (res.data.status_code == 401) {
+            this.$message.warning('请重新登录...');
+          } else if (res.data.status_code == 403) {
+            this.$message.warning('任务已被完成');
+          } else if (res.data.status_code == 404) {
+            this.$message.error('任务丢失...');
+          } else {
+            this.$message.error('服务器错误...请稍后重试');
+          }
+        }).catch((err) => {
+          this.$message.error('服务器错误...请稍后重试');
         });
       }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消放弃'
-        });
+        // do nothing and quit
       });
+    },
+
+    // change created task list page
+    handleAcceptPageChange(pageNum) {
+      this.loadTaskwithPage(pageNum);
     },
     
     // Filter util function

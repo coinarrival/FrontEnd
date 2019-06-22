@@ -87,6 +87,8 @@ import {
 	getCookie
 } from '../../assets/js/cookie.js'
 
+import Config from '../../assets/js/config'
+
 export default {
 	data() {
 		var validatePass2 = (rule, value, callback) => {
@@ -99,7 +101,6 @@ export default {
 			}
 		};
 		return {
-			serverendURL: 'http://localhost:3000',
 			showLogin: false,
 			showRegister: false,
 			loginForm: {
@@ -161,6 +162,7 @@ export default {
 	},
 
 	methods: {
+		// to login pannel
 		ToLogin() {
       this.showRegister = false;
       this.$refs['registrationForm'].resetFields();
@@ -169,10 +171,11 @@ export default {
 			}, 500);
 		},
 
+		// login
 		login() {
 			this.$refs['loginForm'].validate((valid) => {
-				if (valid) {
-					this.axios.post(this.serverendURL + '/login', {
+				if (valid) { // form is valid
+					this.axios.post(`${Config.serverendURL}/login`, {
 						username: this.loginForm.username,
 						password: this.loginForm.password
 					}).then((res) => {
@@ -191,26 +194,14 @@ export default {
 								})
 							}.bind(this), 1000);
 						} else if (res.data.status_code == 400) {
-							this.$message({
-								message: '请输入完整信息',
-								type: 'warning'
-							});
+							this.$message.warning('请输入完整信息');
 						} else if (res.data.status_code == 406) {
-							this.$message({
-								message: '用户名或密码错误',
-								type: 'error'
-							});
+							this.$message.warning('用户名或密码错误');
 						} else {
-							this.$message({
-								message: '服务器错误...请稍后重试',
-								type: 'error'
-							});
+							this.$message.error('服务器错误...请稍后重试');
 						}
 					}).catch((err) => {
-						this.$message({
-							message: '服务器错误...请稍后重试',
-							type: 'error'
-						});
+						this.$message.error('服务器错误...请稍后重试');
 					});
 				} else {
 					return;
@@ -218,6 +209,7 @@ export default {
 			});
 		},
 
+		// to registry pannel
 		ToRegister() {
       this.showLogin = false;
       this.$refs['loginForm'].resetFields();
@@ -226,56 +218,35 @@ export default {
 			}, 500);
 		},
 
+		// make registration
 		register() {
 			this.$refs['registrationForm'].validate((valid) => {
-				if (valid) {
-					if (this.newPassword !== this.newConfirmPassword) {
-						this.$message({
-							message: '密码不一致',
-							type: 'warning'
-						});
-					} else {
-						this.axios.post(this.serverendURL + '/registration', {
-							username: this.newUsername,
-							password: this.newPassword,
-							email: this.newEmail,
-              phone: this.newPhone,
-              role: this.newRole
-						}).then((res) => {
-							if (res.data.status_code === 201) {
-								this.$message({
-									message: '注册成功',
-									type: 'success'
-								});
-								this.username = '';
-								this.password = '';
-								setTimeout(function () {
-									this.showRegister = false
-									this.showLogin = true
-								}.bind(this), 1000);
-							} else if (res.data.status_code === 400) {
-								this.$message({
-									message: '请输入完整信息',
-									type: 'warning'
-								});
-							} else if (res.data.status_code === 409) {
-								this.$message({
-									message: `${res.data.data.which} 已被占用`,
-									type: 'warning'
-								});
-							} else {
-								this.$message({
-									message: '服务器错误...请稍后重试',
-									type: 'error'
-								});
-							}
-						}).catch((err) => {
-							this.$message({
-								message: '服务器错误...请稍后重试',
-								type: 'error'
-							});
-						});
-					}
+				if (valid) { // form valid
+					this.axios.post(`${Config.serverendURL}/registration`, {
+						username: this.newUsername,
+						password: this.newPassword,
+						email: this.newEmail,
+						phone: this.newPhone,
+						role: this.newRole
+					}).then((res) => {
+						if (res.data.status_code === 201) {
+							this.$message.success('注册成功');
+							this.username = ''; // clear data
+							this.password = '';
+							setTimeout(function () {
+								this.showRegister = false
+								this.showLogin = true
+							}.bind(this), 1000);
+						} else if (res.data.status_code === 400) {
+							this.$message.warning('请输入完整信息');
+						} else if (res.data.status_code === 409) {
+							this.$message.warning(`${res.data.data.which} 已被占用`);
+						} else {
+							this.$message('服务器错误...请稍后重试');
+						}
+					}).catch((err) => {
+						this.$message.error('服务器错误...请稍后重试',);
+					});
 				} else {
 					return;
 				}
