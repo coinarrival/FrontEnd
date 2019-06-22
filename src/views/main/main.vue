@@ -1,28 +1,28 @@
 <template>
 	<div class="main-box">
-		<el-tabs type="border-card">
+		<el-tabs type="border-card" @tab-click="tabChange">
 			<el-tab-pane label="币达任务总览">
-				<task-list></task-list>
+				<task-list v-if="currentTabIndex == 0"></task-list>
 			</el-tab-pane>
 
 			<el-tab-pane label="发布币达任务">
-			  <task-publication></task-publication>
+			  <task-publication v-if="currentTabIndex == 1"></task-publication>
 			</el-tab-pane>
 			
 			<el-tab-pane label="发布问卷">
-				<survey-publication></survey-publication>
+				<survey-publication v-if="currentTabIndex == 2"></survey-publication>
 			</el-tab-pane>
 
 			<el-tab-pane label="管理任务">
-				<task-manager></task-manager>
+				<task-manager v-if="currentTabIndex == 3"></task-manager>
 			</el-tab-pane>
 
 			<el-tab-pane label="我的钱包">
-				<user-wallet></user-wallet>
+				<user-wallet v-if="currentTabIndex == 4"></user-wallet>
 			</el-tab-pane>
 
 			<el-tab-pane label="个人信息">
-				<user-info></user-info>
+				<user-info v-if="currentTabIndex == 5"></user-info>
 			</el-tab-pane>
 		</el-tabs>
 	</div>
@@ -59,8 +59,14 @@ export default{
 		TaskManager,
 	},
 	data() {
-		return { };
+		return { 
+			currentTabIndex: 0,
+		};
 	},
-	methods: { }
+	methods: { 
+		tabChange(tab, event) {
+			this.currentTabIndex = tab.index;
+		}
+	}
 }
 </script>
