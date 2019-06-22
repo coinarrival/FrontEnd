@@ -21,7 +21,7 @@
       </el-form-item>
       <el-form-item v-for="(question, index) in survey.questions" :label="question.name" :key="question.key"
         :prop="survey.questions[index].name" :rules="{ required: question.require, message: '', trigger: 'blur' }">
-        <el-input v-model="question.value"></el-input>
+        <el-input disabled value="问题样例输入"></el-input>
       </el-form-item>
     </el-form>
     <div>
@@ -91,9 +91,6 @@ export default {
             key: Date.now()
           });
           this.infoVisible = false;
-        } else {
-          // TODO: write logic statements or remove this block
-          return;
         }
       });
     },
@@ -129,6 +126,7 @@ export default {
         'repeatTime': this.survey.repeatTime,
         'deadline': this.survey.deadline,
       };
+      window.tester = request_body;
       this.axios.post(`${Config.serverendURL}/task`, request_body)
         .then(response => {
           if (response.status == 200) {
@@ -139,6 +137,9 @@ export default {
                 break;
               case 400:
                 this.$message.error('错误：网页运行异常');
+                break;
+              case 401:
+                this.$message.warning('创建失败：登陆失效，请重新登录');
                 break;
               case 403:
                 this.$message.warning('创建失败：余额不足');

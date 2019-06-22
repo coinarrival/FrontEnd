@@ -42,28 +42,33 @@
 
     <!-- 任务详情 -->
     <el-dialog :visible.sync="taskDetailVisible" :close-on-click-modal="false">
-      <el-form :model="taskInfo" :inline="true" disabled>
+      <el-form :model="taskInfo" :inline="true" ref="taskInfo">
         <el-form-item label="任务名">
-          <el-input v-model="taskInfo.title"></el-input>
+          <el-input v-model="taskInfo.title" disabled></el-input>
         </el-form-item>
         <el-form-item label="报酬">
-          <el-input v-model="taskInfo.reward"></el-input>
+          <el-input v-model="taskInfo.reward" disabled></el-input>
         </el-form-item>
         <el-form-item label="发起者">
-          <el-input v-model="taskInfo.issuer"></el-input>
+          <el-input v-model="taskInfo.issuer" disabled></el-input>
         </el-form-item>
         <el-form-item label="期限">
-          <el-input v-model="taskInfo.deadline"></el-input>
+          <el-input v-model="taskInfo.deadline" disabled></el-input>
         </el-form-item>
         <el-form-item label="可完成次数">
-          <el-input-number v-model="taskInfo.repeatTime" controls-position="right"></el-input-number>
+          <el-input-number v-model="taskInfo.repeatTime" controls-position="right" disabled></el-input-number>
+        </el-form-item>
+        <el-form-item v-for="(question, index) in taskInfo.questions" :label="question.name" :key="question.key"
+          :prop="taskInfo.questions[index].name" :rules="{ required: question.require, message: '', trigger: 'blur' }">
+          <el-input v-model="question.value"></el-input>
         </el-form-item>
       </el-form>
-      <div class="taskDetail">
+      <div class="taskDetail" v-if="taskInfo.type === 'normal'">
         {{taskInfo.content}}
       </div>
       <el-button-group>
-        <el-button :disabled="taskInfo.isCompleted" type="success" round>接受任务</el-button>
+        <el-button :disabled="taskInfo.isCompleted" @click="acceptTaskClicked" v-if="taskInfo.type === 'normal'" type="success" round>接受任务</el-button>
+        <el-button :disabled="taskInfo.isCompleted" @click="finishSurveyClicked" v-else type="success" round>提交问卷</el-button>
       </el-button-group>
     </el-dialog>
   </div>
@@ -128,7 +133,15 @@ export default {
       taskInfo: {
         id: "",
         title: "EXAMPLE",
-        content: "EXAMPLE",
+        content: `EXAMPLE`,
+        questions: [
+          {
+            'name': '123',
+            'required': true,
+            'value': '',
+            'key': 1561213153728,
+          }
+        ],
         type: "EXAMPLE",
         issuer: "EXAMPLE",
         reward: 999.999,
@@ -208,7 +221,8 @@ export default {
      * @param {object} event click event
      */
     taskClick(row, column, event) {
-      //TODO: 处理问卷类型内容
+      // TODO: 处理问卷类型内容
+      // ? Maybe solved
       this.axios.get(`${this.serverendURL}/task`, {
         params: {
           'taskID': row.taskID
@@ -216,6 +230,10 @@ export default {
       }).then((res) => {
         if (res.data.status_code == 200) {
           this.taskInfo = res.data.data;
+          if (this.taskInfo.type === 'survey') {
+            this.taskInfo.questions = JSON.parse(this.taskInfo.content);
+          }
+
         } else if (res.data.status_code == 404) {
           this.$message.error('任务已删除');
         } else {
@@ -249,7 +267,88 @@ export default {
     // Filter util function for task state list
     filterState(value, row) {
       return row.state === value;
-    },    
+    },
+
+    acceptTaskClicked() {
+      this.$refs['taskInfo'].validate(valid => {
+        if (valid) {
+          let request_body = {
+            'taskID': this.taskInfo.id,
+          };
+          this.axios.post(`${this.serverendURL}/accepted_tasks`, request_body)
+            .then(response => {
+              if (response.status == 200) {
+                switch(response.data.status_code) {
+                  case 201:
+                    this.$message.success(`提交成功，等待发起者确认完成`);
+                    this.taskDetailVisible = false;
+                    break;
+                  case 400:
+                    this.$message.error('错误：网页运行异常');
+                    break;
+                  case 404:
+                    this.$message.warning('提交失败：没有找到可接受的目标任务');
+                    break;
+                  case 401:
+                    this.$message.warning('提交失败：登陆失效，请重新登录');
+                    break;
+                  case 409:
+                    this.$message.warning('提交失败：每个任务仅可接受并完成一次');
+                    break;
+                  default:
+                    this.$message.error('错误：未知的返回状态');
+                }
+              } else {
+                this.$message.error('错误：未知的返回状态');
+              }
+            })
+            .catch(error => {
+              this.$message.error('错误：未知的服务端错误');
+            })
+        }
+      })
+    },
+
+    finishSurveyClicked() {
+      this.$refs['taskInfo'].validate(valid => {
+        if (valid) {
+          let request_body = {
+            'taskID': this.taskInfo.id,
+            'answer': JSON.stringify(this.taskInfo.questions),
+          };
+          this.axios.post(`${this.serverendURL}/accepted_tasks`, request_body)
+            .then(response => {
+              if (response.status == 200) {
+                switch(response.data.status_code) {
+                  case 201:
+                    this.$message.success(`问卷提交成功，报酬已发放`);
+                    this.taskDetailVisible = false;
+                    break;
+                  case 400:
+                    this.$message.error('错误：网页运行异常');
+                    break;
+                  case 404:
+                    this.$message.warning('提交失败：没有找到可接受的目标任务');
+                    break;
+                  case 401:
+                    this.$message.warning('提交失败：登陆失效，请重新登录');
+                    break;
+                  case 409:
+                    this.$message.warning('提交失败：每个任务仅可接受并完成一次');
+                    break;
+                  default:
+                    this.$message.error('错误：未知的返回状态');
+                }
+              } else {
+                this.$message.error('错误：未知的返回状态');
+              }
+            })
+            .catch(error => {
+              this.$message.error('错误：未知的服务端错误');
+            })
+        }
+      })
+    }
   }
 }
 </script>
