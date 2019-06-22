@@ -31,7 +31,7 @@
       </el-row>
     </el-col>
 
-    <el-dialog :visible.sync="taskDetailVisible">
+    <el-dialog :visible.sync="taskDetailVisible" :close-on-click-modal="false">
       <el-form :model="taskInfo" :inline="true" disabled>
         <el-form-item label="任务名">
           <el-input v-model="taskInfo.title"></el-input>
@@ -53,8 +53,7 @@
         {{taskInfo.content}}
       </div>
       <el-button-group>
-        <el-button v-if="taskInfo.isCompleted" type="success" round disabled>接受任务</el-button>
-        <el-button v-else type="success" round>接受任务</el-button>
+        <el-button :disabled="taskInfo.isCompleted" type="success" round>接受任务</el-button>
       </el-button-group>
     </el-dialog>
   </div>
@@ -114,88 +113,7 @@ export default {
         state: '已过期'
       }, {
         taskID: "123",
-        title: '取快递2',
-        type: "EXAMPLE",
-        issuer: "EXAMPLE",
-        reward: 123.123,
-        deadline: "YYYY-MM-DD",
-        repeatTime: 15,
-        state: '可承接'
-      }, {
-        taskID: "123",
         title: '送钱',
-        type: "EXAMPLE",
-        issuer: "EXAMPLE",
-        reward: 123.123,
-        deadline: "YYYY-MM-DD",
-        repeatTime: 15,
-        state: '可承接'
-      }, {
-        taskID: "123",
-        title: '行人数据2',
-        type: "EXAMPLE",
-        issuer: "EXAMPLE",
-        reward: 123.123,
-        deadline: "YYYY-MM-DD",
-        repeatTime: 15,
-        state: '可承接'
-      }, {
-        taskID: "123",
-        title: '行人数据2',
-        type: "EXAMPLE",
-        issuer: "EXAMPLE",
-        reward: 123.123,
-        deadline: "YYYY-MM-DD",
-        repeatTime: 15,
-        state: '可承接'
-      }, {
-        taskID: "123",
-        title: '行人数据2',
-        type: "EXAMPLE",
-        issuer: "EXAMPLE",
-        reward: 123.123,
-        deadline: "YYYY-MM-DD",
-        repeatTime: 15,
-        state: '可承接'
-      }, {
-        taskID: "123",
-        title: '行人数据2',
-        type: "EXAMPLE",
-        issuer: "EXAMPLE",
-        reward: 123.123,
-        deadline: "YYYY-MM-DD",
-        repeatTime: 15,
-        state: '可承接'
-      }, {
-        taskID: "123",
-        title: '行人数据2',
-        type: "EXAMPLE",
-        issuer: "EXAMPLE",
-        reward: 123.123,
-        deadline: "YYYY-MM-DD",
-        repeatTime: 15,
-        state: '可承接'
-      }, {
-        taskID: "123",
-        title: '行人数据2',
-        type: "EXAMPLE",
-        issuer: "EXAMPLE",
-        reward: 123.123,
-        deadline: "YYYY-MM-DD",
-        repeatTime: 15,
-        state: '可承接'
-      }, {
-        taskID: "123",
-        title: '行人数据2',
-        type: "EXAMPLE",
-        issuer: "EXAMPLE",
-        reward: 123.123,
-        deadline: "YYYY-MM-DD",
-        repeatTime: 15,
-        state: '可承接'
-      }, {
-        taskID: "123",
-        title: '行人数据2',
         type: "EXAMPLE",
         issuer: "EXAMPLE",
         reward: 123.123,
@@ -259,18 +177,18 @@ export default {
     taskClick(row, column, event) {
       //TODO: 处理问卷类型内容
       this.axios.get(`${this.serverendURL}/task?taskID=${row.taskID}`)
-        .then((res) => {
-          if (res.data.status_code == 200) {
-            this.taskInfo = res.data.data;
-          } else if (res.data.status_code == 404) {
-            this.$message.error('任务已删除');
-          } else {
-            this.$message.error('服务器错误...请稍后重试');
-          }
-          })
-        .catch((err) => {
-          this.$message.error('服务器错误...请稍后重试');    
-        });
+      .then((res) => {
+        if (res.data.status_code == 200) {
+          this.taskInfo = res.data.data;
+        } else if (res.data.status_code == 404) {
+          this.$message.error('任务已删除');
+        } else {
+          this.$message.error('服务器错误...请稍后重试');
+        }
+        })
+      .catch((err) => {
+        this.$message.error('服务器错误...请稍后重试');    
+      });
       this.taskDetailVisible = true;
       this.taskInfo.title = row.title;
     },

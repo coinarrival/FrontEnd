@@ -51,7 +51,7 @@
   </div>
 </template>
 
-<style>
+<style scoped>
 	body {}
 
 	h3 {
@@ -175,8 +175,7 @@ export default {
 					this.axios.post(this.serverendURL + '/login', {
 						username: this.loginForm.username,
 						password: this.loginForm.password
-					})
-					.then((res) => {
+					}).then((res) => {
 						if (res.data.status_code == 200) {
 							this.$message({
 								message: '登陆成功',
@@ -207,8 +206,7 @@ export default {
 								type: 'error'
 							});
 						}
-					})
-					.catch((err) => {
+					}).catch((err) => {
 						this.$message({
 							message: '服务器错误...请稍后重试',
 							type: 'error'
@@ -243,8 +241,7 @@ export default {
 							email: this.newEmail,
               phone: this.newPhone,
               role: this.newRole
-						})
-						.then((res) => {
+						}).then((res) => {
 							if (res.data.status_code === 201) {
 								this.$message({
 									message: '注册成功',
@@ -272,8 +269,7 @@ export default {
 									type: 'error'
 								});
 							}
-						})
-						.catch((err) => {
+						}).catch((err) => {
 							this.$message({
 								message: '服务器错误...请稍后重试',
 								type: 'error'
