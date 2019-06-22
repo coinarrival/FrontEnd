@@ -14,8 +14,8 @@
         { validator: checkDate, trigger: 'blur' }]">
         <el-input v-model="survey.deadline"></el-input>
       </el-form-item>
-      <el-form-item prop="repeatTime" label="可接受人数" :rules="[
-        { required: true, message: '请输入可接受人数', trigger: 'blur' },
+      <el-form-item prop="repeatTime" label="可完成次数" :rules="[
+        { required: true, message: '请输入可完成次数', trigger: 'blur' },
         { validator: checkNumber, trigger: 'blur' }]">
         <el-input v-model.number="survey.repeatTime"></el-input>
       </el-form-item>

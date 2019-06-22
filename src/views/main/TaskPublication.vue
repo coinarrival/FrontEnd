@@ -15,8 +15,8 @@
   	  <el-divider></el-divider>
 
 			<el-button-group>
-  	  	<el-button type="primary" icon="el-icon-upload" class="smallButton" round>发布任务</el-button>
-  	  	<el-button type="danger" icon="el-icon-delete" class="smallButton" round>清空</el-button>
+  	  	<el-button type="primary" icon="el-icon-upload" round>发布任务</el-button>
+  	  	<el-button type="danger" icon="el-icon-delete" round>清空</el-button>
 			</el-button-group>
 
   	</el-form>
@@ -41,10 +41,6 @@ export default {
 </script>
 
 <style scoped>
-
-.smallButton {
-  width: 150px
-}
 
 </style>
 

@@ -13,6 +13,10 @@
 				<survey-publication></survey-publication>
 			</el-tab-pane>
 
+			<el-tab-pane label="管理任务">
+				<task-manager></task-manager>
+			</el-tab-pane>
+
 			<el-tab-pane label="我的钱包">
 				<user-wallet></user-wallet>
 			</el-tab-pane>
@@ -43,6 +47,7 @@ import TaskPublication from './TaskPublication.vue'
 import UserInfo from './UserInfo.vue'
 import UserWallet from './UserWallet.vue'
 import SurveyPublication from './SurveyPublication.vue'
+import TaskManager from './TaskManager.vue'
 
 export default{
 	components: {
@@ -51,6 +56,7 @@ export default{
 		SurveyPublication,
 		UserInfo,
 		UserWallet,
+		TaskManager,
 	},
 	data() {
 		return { };
