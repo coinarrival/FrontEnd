@@ -101,7 +101,6 @@ export default {
 	      }
 	    };
 	    return {
-	      serverendURL: 'http://localhost:3000',
 	      showLogin: false,
 	      showRegister: false,
 	      loginForm: {
@@ -121,62 +120,60 @@ export default {
 	          required: true,
 	          message: '请输入用户名',
 	          trigger: 'blur'
-	        }, ],
+	        }],
 	        password: [{
 	          required: true,
 	          message: '请输入密码',
 	          trigger: 'blur'
-	        }, ]
+	        }]
 	      },
 	      registrationRules: {
 	        newUsername: [{
 	          required: true,
 	          message: '请输入用户名',
 	          trigger: 'blur'
-	        }, ],
+	        }],
 	        newPassword: [{
-	            required: true,
-	            message: '请输入密码',
-	            trigger: 'blur'
-	          },
-	          {
-	            min: 8,
-	            max: 20,
-	            message: '密码长度为8-20',
-	            trigger: 'blur'
-	          }
-	        ],
+						required: true,
+						message: '请输入密码',
+						trigger: 'blur'
+					}, {
+						min: 8,
+						max: 20,
+						message: '密码长度为8-20',
+						trigger: 'blur'
+					}],
 	        newConfirmPassword: [{
-	            required: true,
-	            message: '请再次输入密码',
-	            trigger: 'blur'
-	          },
-	          {
-	            validator: validatePass2,
-	            trigger: 'blur'
-	          }
-	        ],
+						required: true,
+						message: '请再次输入密码',
+						trigger: 'blur'
+					}, {
+						validator: validatePass2,
+						trigger: 'blur'
+	        }],
 	        newEmail: [{
 	          required: true,
 	          message: '请输入邮箱',
 	          trigger: 'blur'
-	        }, ],
+	        }, {
+						pattern: /\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*/,
+						message: '非法邮箱',
+						trigger: 'blur'
+					}],
 	        newPhone: [{
-	            required: true,
-	            message: '请输入电话',
-	            trigger: 'blur'
-	          },
-	          {
-	            pattern: /^1[34578]\d{9}$/,
-	            message: '目前只支持中国大陆的手机号码',
-	            trigger: 'blur'
-	          }
-	        ],
+						required: true,
+						message: '请输入电话',
+						trigger: 'blur'
+					}, {
+						pattern: /^1[34578]\d{9}$/,
+						message: '目前只支持中国大陆的手机号码',
+						trigger: 'blur'
+					}],
 	        newRole: [{
 	          required: true,
 	          message: '请选择职业',
 	          trigger: 'blur'
-	        }, ]
+	        }]
 	      }
 	    }
 	  },
@@ -185,11 +182,11 @@ export default {
 	  mounted() {
 	    // TODO: cookie
 	    if (getCookie('username')) {
-	      this.$router.push('/home')
+	      this.$router.push('/home');
 	    }
 
 	    setTimeout(() => {
-	      this.showLogin = true
+	      this.showLogin = true;
 	    }, 500);
 	  },
 
@@ -198,23 +195,20 @@ export default {
 	      this.showRegister = false;
 	      this.$refs['registrationForm'].resetFields();
 	      setTimeout(() => {
-	        this.showLogin = true
+	        this.showLogin = true;
 	      }, 500);
 	    },
 
 	    login() {
 	      this.$refs['loginForm'].validate((valid) => {
 	        if (valid) {
-	          this.axios.post(this.serverendURL + '/login', {
+	          this.axios.post(`${Config.serverendURL}/login`, {
 	            username: this.loginForm.username,
 	            password: this.loginForm.password
 	          }).then((res) => {
 	            if (res.data.status_code == 200) {
-	              this.$message({
-	                message: '登陆成功',
-	                type: 'success'
-	              });
-	              setCookie('username', this.username, 1000 * 60)
+								this.$message.success('登陆成功');
+	              setCookie('username', this.username, 1000 * 60);
 	              setTimeout(function () {
 	                this.$router.push({
 	                  path: 'home',
@@ -224,26 +218,14 @@ export default {
 	                })
 	              }.bind(this), 1000);
 	            } else if (res.data.status_code == 400) {
-	              this.$message({
-	                message: '请输入完整信息',
-	                type: 'warning'
-	              });
+	              this.$message.warning('请输入完整信息');
 	            } else if (res.data.status_code == 406) {
-	              this.$message({
-	                message: '用户名或密码错误',
-	                type: 'error'
-	              });
+	              this.$message.error('用户名或密码错误');
 	            } else {
-	              this.$message({
-	                message: '服务器错误...请稍后重试',
-	                type: 'error'
-	              });
+	              this.$message.error('服务器错误...请稍后重试');
 	            }
 	          }).catch((err) => {
-	            this.$message({
-	              message: '服务器错误...请稍后重试',
-	              type: 'error'
-	            });
+	            this.$message.error('服务器错误...请稍后重试');
 	          });
 	        } else {
 	          return;
@@ -262,59 +244,31 @@ export default {
 	    register() {
 	      this.$refs['registrationForm'].validate((valid) => {
 	        if (valid) {
-	          if (this.newPassword !== this.newConfirmPassword) {
-	            this.$message({
-	              message: '密码不一致',
-	              type: 'warning'
-	            });
-	          } else {
-				 this.axios.post(this.serverendURL + '/registration', {
-	              username: this.registrationForm.newUsername,
-	              password: this.registrationForm.newPassword,
-	              email: this.registrationForm.newEmail,
-	              phone: this.registrationForm.newPhone,
-	              role: this.registrationForm.newRole
-	            }).then((res) => {
-	              if (res.data.status_code === 201) {
-	                this.$message({
-	                  message: '注册成功',
-	                  type: 'success'
-	                });
-					this.registrationForm.newUsername = '';
-					this.registrationForm.newPassword = '';
-					this.newConfirmPassword = '';
-					this.registrationForm.newEmail = '';
-					this.registrationForm.newPhone = '';
-					this.registrationForm.newRole = '';
-	                this.loginForm.username = '';
-	                this.loginForm.password = '';
-	                setTimeout(function () {
-	                  this.showRegister = false
-	                  this.showLogin = true
-	                }.bind(this), 1000);
-	              } else if (res.data.status_code === 400) {
-	                this.$message({
-	                  message: '请输入完整信息',
-	                  type: 'warning'
-	                });
-	              } else if (res.data.status_code === 409) {
-	                this.$message({
-	                  message: `${res.data.data.which} 已被占用`,
-	                  type: 'warning'
-	                });
-	              } else {
-	                this.$message({
-	                  message: '服务器错误...请稍后重试',
-	                  type: 'error'
-	                });
-	              }
-	            }).catch((err) => {
-	              this.$message({
-	                message: '服务器错误...请稍后重试',
-	                type: 'error'
-	              });
-	            });
-	          }
+						this.axios.post(this.serverendURL + '/registration', {
+							username: this.registrationForm.newUsername,
+							password: this.registrationForm.newPassword,
+							email: this.registrationForm.newEmail,
+							phone: this.registrationForm.newPhone,
+							role: this.registrationForm.newRole
+						}).then((res) => {
+							if (res.data.status_code === 201) {
+								this.$message.success('注册成功');
+								this.$refs['registrationForm'].resetFields();
+								this.$refs['loginForm'].resetFields();
+								setTimeout(function () {
+									this.showRegister = false;
+									this.showLogin = true;
+								}.bind(this), 1000);
+							} else if (res.data.status_code === 400) {
+								this.$message.warning('请输入完整信息');
+							} else if (res.data.status_code === 409) {
+								this.$message.warning(`${res.data.data.which} 已被占用`);
+							} else {
+								this.$message.error('服务器错误...请稍后重试');
+							}
+						}).catch((err) => {
+							this.$message.error('服务器错误...请稍后重试');
+						});
 	        } else {
 	          return;
 	        }
