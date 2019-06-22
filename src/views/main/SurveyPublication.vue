@@ -55,12 +55,13 @@
 </template>
 
 <script>
+import Config from '../../assets/js/config'
+
 export default {
   name: 'SurveyPublication',
   props: {},
   data() {
     return {
-      serverendURL: 'http://localhost:3000',
       survey: {
         name: '问卷',
         reward: 10,
@@ -128,7 +129,7 @@ export default {
         'repeatTime': this.survey.repeatTime,
         'deadline': this.survey.deadline,
       };
-      this.axios.post(`${this.serverendURL}/task`, request_body)
+      this.axios.post(`${Config.serverendURL}/task`, request_body)
         .then(response => {
           if (response.status == 200) {
             switch(response.data.status_code) {
