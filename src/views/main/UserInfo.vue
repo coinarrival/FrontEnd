@@ -8,7 +8,7 @@
       <el-input v-model="basicInfo.gender" autocomplete="off"></el-input>
     </el-form-item>
 
-    <el-form-item label="年龄" :label-width="formLabelWidth">
+    <el-form-item label="年龄" :label-width="formLabelWidth" prop="age">
       <el-input v-model="basicInfo.age" autocomplete="off"></el-input>
     </el-form-item>
 
@@ -43,7 +43,7 @@
       <el-input v-model="teacherInfo.teacherID" autocomplete="off"></el-input>
     </el-form-item>
 
-    <el-form-item label="年级" :label-width="formLabelWidth" v-if="basicInfo.role === 'student'">
+    <el-form-item label="年级" :label-width="formLabelWidth" v-if="basicInfo.role === 'student'" prop="grade">
       <el-input v-model="studentInfo.grade" autocomplete="off"></el-input>
     </el-form-item>
 
@@ -90,6 +90,32 @@ export default {
     this.loadInfo();
   },
   data() {
+    var checkAge = (rule, value, callback) => {
+      if (!value) {
+        callback();
+      } else {
+        if (!Number.isInteger(value)) {
+          callback(new Error('年龄应为数字值'));
+        } else if (value < 18 || value > 80) {
+            callback(new Error('请输入正确的年龄'));
+        } else {
+          callback();
+        }
+      }
+    };
+
+    var checkGrade = (rule, value, callback) => {
+      if (!value) {
+        callback();
+      } else {
+        if (!Number.isInteger(value)) {
+          callback(new Error('年级应为数字值'));
+        } else {
+          callback();
+        }
+      }
+    };
+
     return {
       formLabelWidth: '120px',
       basicInfo: {
@@ -105,19 +131,71 @@ export default {
         avatar: 'example.png'        
       },
       validateRules: {
-        username: [
-					{ required: true, message: '请输入用户名', trigger: 'blur' },
-        ],
-				password: [
-					{ required: true, message: '请输入密码', trigger: 'blur' },
-				],
-        email: [
-					{ required: true, message: '请输入邮箱', trigger: 'blur' },
-				],
-        phone: [
-					{ required: true, message: '请输入电话', trigger: 'blur' },
-					{ len: 11, message: '电话格式错误', trigger: 'blur' }
-        ]
+        username: [{ 
+          required: true, 
+          message: '请输入用户名', 
+          trigger: 'blur' 
+        }],
+				password: [{
+          required: true, 
+          message: '请输入密码', 
+          trigger: 'blur' 
+        }, {
+          min: 8, 
+          max: 20, 
+          message: '密码长度为8-20', 
+          trigger: 'blur'
+        }],
+        email: [{
+          required: true,
+          message: '请输入邮箱', 
+          trigger: 'blur' 
+        }, {
+          pattern: /\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*/,
+          message: '非法邮箱',
+          trigger: 'blur'
+        }],
+        phone: [{ 
+          required: true, 
+          message: '请输入电话', 
+          trigger: 'blur' 
+        }, { 
+          pattern: /^1[34578]\d{9}$/, 
+          message: '目前只支持中国大陆的手机号码', 
+          trigger: 'blur' 
+        }],
+        age: [{
+          required: false,
+          validator: checkAge, 
+          trigger: 'blur' 
+        }]
+      },
+      studentRules: {
+        studentID: [{
+          required: true,
+          message: '请输入学号',
+          trigger: blur
+        }, { 
+          pattern: /^1\d{7}$/, 
+          message: '请输入8位学号', 
+          trigger: 'blur' 
+        }],
+        grade: [{
+          required: false,
+          validator: checkGrade,
+          trigger: blur
+        }]
+      },
+      teacherRules: {
+        teacherID: [{
+          required: true,
+          message: '请输入工号',
+          trigger: blur
+        }, { 
+          pattern: /\d{8}$/, 
+          message: '请输入8位工号', 
+          trigger: 'blur' 
+        }]
       },
       studentInfo: {
         grade: '2016',
@@ -170,6 +248,7 @@ export default {
       this.$refs['basicInfo'].validate((valid) => {
         if (valid) {
           this.axios.post(`${Config.serverendURL}/account_info`, {
+            password: this.basicInfo.password,
             gender: this.basicInfo.gender,
             email: this.basicInfo.email,
             phone: this.basicInfo.phone,
@@ -177,9 +256,8 @@ export default {
             major: this.basicInfo.major,
             age: this.basicInfo.age,
             studentID: this.studentInfo.studentID,
-            studentID: this.studentInfo.grade,
+            grade: this.studentInfo.grade,
             teacherID: this.teacherInfo.teacherID,
-            grade: this.basicInfo.grade,
             avatar: this.basicInfo.avatar
           }) .then((res) => {
             if (res.data.status_code === 201) {
