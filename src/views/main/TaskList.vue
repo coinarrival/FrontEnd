@@ -2,11 +2,20 @@
   <div>
     <el-col>
       <el-row>
+        <!-- 任务列表 -->
         <el-table :data="taskList" border stripe height="600px" style="width: 100%" highlight-current-row
           @row-click="taskClick">
           <el-table-column prop="title" label="任务名称" align="center">
           </el-table-column>
           <el-table-column prop="issuer" label="发起者" align="center" width="150px">
+          </el-table-column>
+          <el-table-column prop="type" label="类型" align="center" width="100px" :filters="typeFilters" :filter-method="filterType"
+            filter-placement="bottom-end">
+            <template slot-scope="scope">
+              <el-tag :type="typeTag[scope.row.type]" effect="dark" disable-transitions>
+                {{scope.row.type}}
+              </el-tag>
+            </template>
           </el-table-column>
           <el-table-column prop="reward" label="任务报酬" align="center" sortable width="150px">
           </el-table-column>
@@ -31,6 +40,7 @@
       </el-row>
     </el-col>
 
+    <!-- 任务详情 -->
     <el-dialog :visible.sync="taskDetailVisible" :close-on-click-modal="false">
       <el-form :model="taskInfo" :inline="true" disabled>
         <el-form-item label="任务名">
@@ -60,6 +70,8 @@
 </template>
 
 <script>
+import Config from '../../assets/js/config'
+
 export default {
   name: 'TaskList',
   props: {},
@@ -68,26 +80,14 @@ export default {
   },
   data() {
     return {
-      serverendURL: 'http://localhost:3000',
-      
+      // TODO: delete the static data once server on
+      // task list variable
       maxPages: 10,
-      stateFilters: [{
-        text: '已过期',
-        value: '已过期',
-      }, {
-        text: '可承接',
-        value: '可承接'
-      }],
-      stateTag: {
-        '已过期': 'warning',
-        '可承接': 'success'
-      },
-
       selectedTaskID: '',
       taskList: [{
         taskID: "123",
         title: '取快递',
-        type: "EXAMPLE",
+        type: "normal",
         issuer: "EXAMPLE",
         reward: 123.123,
         deadline: "YYYY-MM-DD",
@@ -96,7 +96,7 @@ export default {
       }, {
         taskID: "123",
         title: '《计算机网络》第六版PDF',
-        type: "EXAMPLE",
+        type: "normal",
         issuer: "EXAMPLE",
         reward: 123.123,
         deadline: "YYYY-MM-DD",
@@ -105,7 +105,7 @@ export default {
       }, {
         taskID: "123",
         title: '行人数据',
-        type: "EXAMPLE",
+        type: "survey",
         issuer: "EXAMPLE",
         reward: 123.123,
         deadline: "YYYY-MM-DD",
@@ -114,7 +114,7 @@ export default {
       }, {
         taskID: "123",
         title: '送钱',
-        type: "EXAMPLE",
+        type: "normal",
         issuer: "EXAMPLE",
         reward: 123.123,
         deadline: "YYYY-MM-DD",
@@ -122,6 +122,8 @@ export default {
         state: '可承接'
       }],
 
+      // TODO: delete the static data once server on
+      // task detail variable
       taskDetailVisible: false,
       taskInfo: {
         id: "",
@@ -134,6 +136,32 @@ export default {
         repeatTime: 15,
         isCompleted: false
       },
+
+      // type filter variable
+      typeFilters: [{
+        text: '普通',
+        value: 'normal'
+      }, {
+        text: '问卷',
+        value: 'survey'
+      }],
+      typeTag: {
+        'survey': 'success',
+        'normal': 'info'
+      },
+
+      // state filter variable
+      stateFilters: [{
+        text: '已过期',
+        value: '已过期',
+      }, {
+        text: '可承接',
+        value: '可承接'
+      }],
+      stateTag: {
+        '已过期': 'warning',
+        '可承接': 'success'
+      },
     }
   },
   methods: {
@@ -143,13 +171,18 @@ export default {
      * @param {int} page the needed page
      */
     loadTaskwithPage(page) {
-      this.axios.get(`${this.serverendURL}/tasks?page=${page}`)
-      .then((res) => {
+      this.axios.get(`${Config.serverendURL}/tasks`, {
+        params: {
+          'page': page
+        }
+      }).then((res) => {
         if (res.data.status_code == 200) {
           this.taskList = res.data.tasks;
           this.taskList.forEach(element => {
             if (new Date(element.deadline) < new Date()) {
               element.state = '已过期';
+            } else if (element.isCompleted){
+              element.state = '已完成';
             } else {
               element.state = '可承接';
             }
@@ -161,8 +194,8 @@ export default {
         } else {
           this.$message.error('请求任务数据错误');
         }
-      })
-      .catch((err) => {
+      }).catch((err) => {
+        this.$message.error('请求任务数据错误');
         console.log(err);
       });
     },
@@ -176,8 +209,11 @@ export default {
      */
     taskClick(row, column, event) {
       //TODO: 处理问卷类型内容
-      this.axios.get(`${this.serverendURL}/task?taskID=${row.taskID}`)
-      .then((res) => {
+      this.axios.get(`${this.serverendURL}/task`, {
+        params: {
+          'taskID': row.taskID
+        }
+      }).then((res) => {
         if (res.data.status_code == 200) {
           this.taskInfo = res.data.data;
         } else if (res.data.status_code == 404) {
@@ -189,6 +225,7 @@ export default {
       .catch((err) => {
         this.$message.error('服务器错误...请稍后重试');    
       });
+      // TODO: delete the static data once server on
       this.taskDetailVisible = true;
       this.taskInfo.title = row.title;
       this.taskInfo.isCompleted = (row.state != '可承接');
@@ -203,16 +240,16 @@ export default {
       this.loadTaskwithPage(pageNum);
     },
 
-    /**
-     * Filter util function for task state list
-     * helps find the target state tasks
-     * 
-     * @param {string} value filter target value
-     * @param {object} row filter list row
-     */
+    
+    // Filter util function for task type list
+    filterType(value, row) {
+      return row.type === value;
+    },
+
+    // Filter util function for task state list
     filterState(value, row) {
       return row.state === value;
-    },
+    },    
   }
 }
 </script>

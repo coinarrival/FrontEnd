@@ -47,7 +47,7 @@ import TaskPublication from './TaskPublication.vue'
 import UserInfo from './UserInfo.vue'
 import UserWallet from './UserWallet.vue'
 import SurveyPublication from './SurveyPublication.vue'
-import TaskManager from './TaskManager.vue'
+import TaskManager from './TaskManager/TaskManager.vue'
 
 export default{
 	components: {

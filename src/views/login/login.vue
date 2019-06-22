@@ -87,6 +87,8 @@ import {
 	getCookie
 } from '../../assets/js/cookie.js'
 
+import Config from '../../assets/js/config'
+
 export default {
 	data() {
 	    var validatePass2 = (rule, value, callback) => {
