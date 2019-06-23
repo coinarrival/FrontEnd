@@ -56,8 +56,12 @@
         <el-form-item label="可完成次数">
           <el-input-number v-model="taskInfo.repeatTime" disabled></el-input-number>
         </el-form-item>
-        <el-form-item label="任务内容">
+        <el-form-item label="任务内容" v-if="taskInfo.type !== 'survey'">
           <el-input v-model="taskInfo.content" disabled></el-input>
+        </el-form-item>
+        <el-form-item v-for="(question, index) in taskInfo.questions" :label="question.name" :key="question.key"
+          :prop="taskInfo.questions[index].name" :rules="{ required: question.require, message: '', trigger: 'blur' }">
+          <el-input disabled value="问题样例输入"></el-input>
         </el-form-item>
       </el-form>
       <el-button-group>
@@ -126,11 +130,30 @@ export default {
       // TODO: delete the static data once server on
       // task info variable
       taskDetailVisible: false,
+      // taskInfo: {
+      //   id: "",
+      //   title: "EXAMPLE",
+      //   content: "EXAMPLE",
+      //   type: "EXAMPLE",
+      //   issuer: "EXAMPLE",
+      //   reward: 999.999,
+      //   deadline: "2019-6-10",
+      //   repeatTime: 15,
+      //   isCompleted: false
+      // },
+
+      // task example of survey type
       taskInfo: {
         id: "",
         title: "EXAMPLE",
         content: "EXAMPLE",
-        type: "EXAMPLE",
+        questions: [{
+          name: '123',
+          require: true,
+          value: '',
+          key: Date.now()
+        }],
+        type: "survey",
         issuer: "EXAMPLE",
         reward: 999.999,
         deadline: "2019-6-10",
@@ -222,6 +245,9 @@ export default {
       }).then((res) => {
         if (res.data.status_code == 200) {
           this.taskInfo = res.data.data;
+          if (this.taskInfo.type === 'survey') {
+            this.taskInfo.questions = JSON.parse(this.taskInfo.content);
+          }
         } else if (res.data.status_code == 404) {
           this.$message.error('任务已删除');
         } else {

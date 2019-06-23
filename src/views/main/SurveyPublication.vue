@@ -9,10 +9,11 @@
         { validator: checkNumber, trigger: 'blur' }]">
         <el-input v-model.number="survey.reward"></el-input>
       </el-form-item>
-      <el-form-item prop="deadline" label="截止时间" :rules="[
-        { required: true, message: '请输入截止时间', trigger: 'blur' },
-        { validator: checkDate, trigger: 'blur' }]">
-        <el-input v-model="survey.deadline"></el-input>
+      <el-form-item prop="deadline" label="截止日期" :rules="[
+	    { required: true, message: '请选择截止日期', trigger: 'blur' }]">
+        <el-date-picker v-model="survey.deadline" type="date" placeholder="选择日期" value-format="yyyy-MM-dd"
+          :picker-options="pickerOptions" style="width: 100%;">
+        </el-date-picker>
       </el-form-item>
       <el-form-item prop="repeatTime" label="可完成次数" :rules="[
         { required: true, message: '请输入可完成次数', trigger: 'blur' },
@@ -73,6 +74,11 @@ export default {
       questionInfo: {
         name: '',
         require: false,
+      },
+      pickerOptions: {
+        disabledDate(time) {
+          return time.getTime() < Date.now();
+        }
       }
     }
   },
