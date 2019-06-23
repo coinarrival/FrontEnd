@@ -23,9 +23,9 @@
         <template slot-scope="scope">
           <!-- TODO: 更改判断条件 -->
           <el-button-group>
-            <el-button type="success" :disabled="scope.row.state != '可承接'" @click.stop="showVerifyDialog(scope.row)">认证完成
+            <el-button type="success" :disabled="opeartionPermission(scope.row.state)" @click.stop="showVerifyDialog(scope.row)">认证完成
             </el-button>
-            <el-button type="danger" :disabled="scope.row.state != '可承接'" @click.stop="deleteTask(scope.row)">删除</el-button>
+            <el-button type="danger" :disabled="opeartionPermission(scope.row.state)" @click.stop="deleteTask(scope.row)">删除</el-button>
           </el-button-group>
         </template>
       </el-table-column>
@@ -35,29 +35,33 @@
     </el-pagination>
 
     <!-- 任务修改框 -->
-    <el-dialog :visible.sync="taskDetailVisible" :close-on-click-modal="false">
-      <el-form :model="taskInfo" :disabled="taskInfo.state != '可承接'">
-        <el-form-item label="任务名">
-          <el-input v-model="taskInfo.title"></el-input>
+    <el-dialog :visible.sync="taskDetailVisible" :close-on-click-modal="false" @close="resetDetailDialog">
+      <el-form :model="taskInfo" ref="taskInfo" @submit.native.prevent style="margin: 0 auto; text-align: left;" label-position="left">
+        <el-form-item prop="title" label="任务名" :rules="{ required: true, message: '请输入任务名', trigger: 'blur' }">
+          <el-input v-model="taskInfo.title" :disabled="opeartionPermission(taskInfo.state)"></el-input>
         </el-form-item>
-        <el-form-item label="报酬">
-          <el-input v-model="taskInfo.reward"></el-input>
+        <el-form-item prop="reward" label="报酬"
+          :rules="[{ required: true, message: '请输入报酬', trigger: 'blur' }, { validator: checkNumber, trigger: 'blur' }]">
+          <el-input v-model.number="taskInfo.reward" :disabled="opeartionPermission(taskInfo.state)"></el-input>
         </el-form-item>
         <el-form-item label="发起者">
-          <el-input v-model="taskInfo.issuer"></el-input>
+          <el-input v-model="taskInfo.issuer" disabled></el-input>
         </el-form-item>
-        <el-form-item label="期限">
-          <el-input v-model="taskInfo.deadline"></el-input>
+        <el-form-item prop="deadline" label="截止日期" :rules="[
+      		{ required: true, message: '请选择截止日期', trigger: 'blur' }]">
+          <el-date-picker v-model="taskInfo.deadline" align="right" type="date" placeholder="选择日期"
+            value-format="yyyy-MM-dd" :picker-options="pickerOptions" :disabled="opeartionPermission(taskInfo.state)">
+          </el-date-picker>
         </el-form-item>
         <el-form-item label="可完成次数">
-          <el-input-number v-model="taskInfo.repeatTime"></el-input-number>
+          <el-input-number v-model="taskInfo.repeatTime" disabled></el-input-number>
         </el-form-item>
         <el-form-item label="任务内容">
-          <el-input v-model="taskInfo.content"></el-input>
+          <el-input v-model="taskInfo.content" disabled></el-input>
         </el-form-item>
       </el-form>
       <el-button-group>
-        <el-button :disabled="taskInfo.state != '可承接'" type="success" round>修改任务</el-button>
+        <el-button :disabled="opeartionPermission(taskInfo.state)" type="success" @click="updateTask" round>修改任务</el-button>
       </el-button-group>
     </el-dialog>
 
@@ -129,7 +133,7 @@ export default {
         type: "EXAMPLE",
         issuer: "EXAMPLE",
         reward: 999.999,
-        deadline: "YYYY-MM-DD",
+        deadline: "2019-6-10",
         repeatTime: 15,
         isCompleted: false
       },
@@ -145,6 +149,12 @@ export default {
         userID: '111',
         isFinished: true
       }],
+
+      pickerOptions: {
+        disabledDate(time) {
+          return time.getTime() < Date.now();
+        }
+      },
 
       // filter variable
       stateFilters: [{
@@ -226,6 +236,33 @@ export default {
       this.taskInfo.state = row.state;
       this.taskDetailVisible = true;
     },
+
+    // update task
+    updateTask() {
+      this.axios.post(`${Config.serverendURL}/created_task`, {
+        "taskID": this.taskInfo.taskID,
+        "title": this.taskInfo.title,
+        "reward": this.taskInfo.reward,
+        "deadline": this.taskInfo.deadline
+      }).then((res) => {
+        if (res.data.status_code == 200) {
+          this.$message.success('更新完成');
+        } else if (res.data.status_code == 400) {
+          this.$message.error('信息错误');
+        } else {
+          this.$message.error('服务器错误...请稍后重试');
+        }
+      }).catch((err) => {
+        this.$message.error('服务器错误...请稍后重试');
+      });
+    },
+    
+    // reset detail dialog form
+    // and the chosen task info
+    resetDetailDialog() {
+      this.$refs['taskInfo'].resetFields();
+      this.taskInfo = {};
+    },
     
     /**
      * Delete task with operation confirm
@@ -306,6 +343,11 @@ export default {
       });
     },
     
+    // judge operation permission
+    opeartionPermission(value) {
+      return value != '可承接';
+    },
+
     // reset the selected verfity task id
     resetSelected() {
       this.verifyTaskID = '';
@@ -319,6 +361,22 @@ export default {
     // Filter util function
     filterState(value, row) {
       return row.state === value;
+    },
+
+    /**
+     * Util function to help check the number is valid
+     * in form rules
+     * 
+     * @param {object} rule
+     * @param {string} value the checked value
+     * @param {function} callback callback funtion
+     */
+    checkNumber(rule, value, callback) {
+      if (!Number.isInteger(value)) {
+        callback(new Error('请输入整数值'));
+      } else {
+        callback();
+      }
     }
   }
 }
