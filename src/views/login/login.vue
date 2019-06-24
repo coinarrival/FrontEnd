@@ -132,6 +132,10 @@ export default {
 	          required: true,
 	          message: '请输入用户名',
 	          trigger: 'blur'
+			 }, {
+				pattern: /^[a-zA-Z\u4E00-\u9FA5][a-zA-Z0-9_\u4E00-\u9FA5]{0,14}$/,
+				message: '用户名长度不超过15，英文字母或汉字开头，可包含数字和下划线',
+				trigger: 'blur'
 	        }],
 	        newPassword: [{
 						required: true,
