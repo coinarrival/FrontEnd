@@ -228,8 +228,15 @@ export default {
           this.$message.error('请求任务数据错误');
         }
       }).catch((err) => {
-        this.$message.error('请求任务数据错误');
-        console.log(err);
+        if (err.response.status == 401) {
+          this.$message.error('请重新登录');
+          setTimeout(() => {
+            this.$router.push('/');
+          }, 1000);
+        } else {
+          this.$message.error('请求任务数据错误');
+          console.log(err);
+        }
       });
     },
 
@@ -255,7 +262,14 @@ export default {
         }
         this.taskDetailVisible = true;
       }).catch((err) => {
-        this.$message.error('服务器错误...请稍后重试');
+        if (err.response.status == 401) {
+          this.$message.error('请重新登录');
+          setTimeout(() => {
+            this.$router.push('/');
+          }, 1000);
+        } else {
+          this.$message.error('服务器错误...请稍后重试');
+        }
       });
       // TODO: delete code once server on
       this.taskInfo.title = row.title;
@@ -279,7 +293,14 @@ export default {
           this.$message.error('服务器错误...请稍后重试');
         }
       }).catch((err) => {
-        this.$message.error('服务器错误...请稍后重试');
+        if (err.response.status == 401) {
+          this.$message.error('请重新登录');
+          setTimeout(() => {
+            this.$router.push('/');
+          }, 1000);
+        } else {
+          this.$message.error('服务器错误...请稍后重试');
+        }
       });
     },
     
@@ -311,15 +332,20 @@ export default {
             this.$message.success('删除成功');
           } else if (res.data.status_code == 400) {
             this.$message.warning('信息错误，请重试...');
-          } else if (res.data.status_code == 401) {
-            this.$message.warning('请重新登录...');
           } else if (res.data.status_code == 404) {
             this.$message.error('任务丢失...');
           } else {
             this.$message.error('服务器错误...请稍后重试');
           }
         }).catch((err) => {
-          this.$message.error('服务器错误...请稍后重试');
+          if (err.response.status == 401) {
+            this.$message.error('请重新登录');
+            setTimeout(() => {
+              this.$router.push('/');
+            }, 1000);
+          } else {
+            this.$message.error('服务器错误...请稍后重试');
+          }
         });
       }).catch(() => {
         // quit and do nothing
@@ -354,15 +380,20 @@ export default {
             this.$message.success('删除成功');
           } else if (res.data.status_code == 400) {
             this.$message.warning('信息错误，请重试...');
-          } else if (res.data.status_code == 401) {
-            this.$message.warning('请重新登录...');
           } else if (res.data.status_code == 404) {
             this.$message.error('任务丢失...');
           } else {
             this.$message.error('服务器错误...请稍后重试');
           }
         }).catch((err) => {
-          this.$message.error('服务器错误...请稍后重试');
+          if (err.response.status == 401) {
+            this.$message.error('请重新登录');
+            setTimeout(() => {
+              this.$router.push('/');
+            }, 1000);
+          } else {
+            this.$message.error('服务器错误...请稍后重试');
+          }
         });
       }).catch(() => {
         // quit and do nothing

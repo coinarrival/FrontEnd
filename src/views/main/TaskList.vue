@@ -208,8 +208,15 @@ export default {
           this.$message.error('请求任务数据错误');
         }
       }).catch((err) => {
-        this.$message.error('请求任务数据错误');
-        console.log(err);
+        if (err.response.status == 401) {
+          this.$message.error('请重新登录');
+          setTimeout(() => {
+            this.$router.push('/');
+          }, 1000);
+        } else {
+          this.$message.error('请求任务数据错误');
+          console.log(err);
+        }
       });
     },
 
@@ -241,7 +248,14 @@ export default {
         }
         })
       .catch((err) => {
-        this.$message.error('服务器错误...请稍后重试');    
+        if (err.response.status == 401) {
+          this.$message.error('请重新登录');
+          setTimeout(() => {
+            this.$router.push('/');
+          }, 1000);
+        } else {
+          this.$message.error('服务器错误...请稍后重试');
+        }    
       });
       // TODO: delete the static data once server on
       this.taskDetailVisible = true;
@@ -289,9 +303,6 @@ export default {
                   case 404:
                     this.$message.warning('提交失败：没有找到可接受的目标任务');
                     break;
-                  case 401:
-                    this.$message.warning('提交失败：登陆失效，请重新登录');
-                    break;
                   case 409:
                     this.$message.warning('提交失败：每个任务仅可接受并完成一次');
                     break;
@@ -303,7 +314,14 @@ export default {
               }
             })
             .catch(error => {
-              this.$message.error('错误：未知的服务端错误');
+              if (err.response.status == 401) {
+                this.$message.error('提交失败：登陆失效，请重新登录');
+                setTimeout(() => {
+                  this.$router.push('/');
+                }, 1000);
+              } else {
+                this.$message.error('错误：未知的服务端错误');
+              }
             })
         }
       })
@@ -330,9 +348,6 @@ export default {
                   case 404:
                     this.$message.warning('提交失败：没有找到可接受的目标任务');
                     break;
-                  case 401:
-                    this.$message.warning('提交失败：登陆失效，请重新登录');
-                    break;
                   case 409:
                     this.$message.warning('提交失败：每个任务仅可接受并完成一次');
                     break;
@@ -344,7 +359,14 @@ export default {
               }
             })
             .catch(error => {
-              this.$message.error('错误：未知的服务端错误');
+              if (err.response.status == 401) {
+                this.$message.error('提交失败：登陆失效，请重新登录');
+                setTimeout(() => {
+                  this.$router.push('/');
+                }, 1000);
+              } else {
+                this.$message.error('错误：未知的服务端错误');
+              }
             })
         }
       })

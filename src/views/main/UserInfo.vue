@@ -271,8 +271,15 @@ export default {
           this.$message.error('请求错误');
         }
       }).catch((err) => {
-        this.$message.error('请求错误');
-        console.log(err);
+        if (err.response.status == 401) {
+          this.$message.error('请重新登录');
+          setTimeout(() => {
+            this.$router.push('/');
+          }, 1000);
+        } else {
+          this.$message.error('请求错误');
+          console.log(err);
+        }
       });
       this.$refs['basicInfo'].clearValidate();
     }, 
@@ -296,15 +303,20 @@ export default {
           }) .then((res) => {
             if (res.data.status_code === 201) {
               this.$message.success('更新成功');
-            } else if (res.data.status_code === 401) {
-              this.$message.warning('请重新登录'); 
             } else if (res.data.status_code === 409) {
               this.$message.warning(`${res.data.data.which} 已被占用`);
             } else {
               this.$message.error('服务器错误...请稍后重试');
             }
           }).catch((err) => { 
-            this.$message.error('服务器错误...请稍后重试');
+            if (err.response.status == 401) {
+              this.$message.error('请重新登录');
+              setTimeout(() => {
+                this.$router.push('/');
+              }, 1000);
+            } else {
+              this.$message.error('服务器错误...请稍后重试');
+            }
           });
         } else {
 				  return;

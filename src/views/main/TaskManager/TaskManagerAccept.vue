@@ -33,6 +33,7 @@
 
 <script>
 import Config from '../../../assets/js/config'
+import { setTimeout } from 'timers';
 
 export default {
   name: 'TaskManagerAccept',
@@ -113,8 +114,6 @@ export default {
             }
           });
           this.createdPages = res.data.max_pages;
-        } else if (res.data.status_code == 401) {
-          this.$message.error('请重新登录');
         } else if (res.data.status_code == 416) {
           this.$message.error('请求任务数据错误');
           this.createdPages = res.data.max_pages;
@@ -122,8 +121,15 @@ export default {
           this.$message.error('请求任务数据错误');
         }
       }).catch((err) => {
-        this.$message.error('请求任务数据错误');
-        console.log(err);
+        if (err.response.status == 401) {
+          this.$message.error('请重新登录');
+          setTimeout(() => {
+            this.$router.push('/');
+          }, 1000);
+        } else {
+          this.$message.error('请求任务数据错误');
+          console.log(err);
+        }
       });
     },
 
@@ -148,8 +154,6 @@ export default {
             this.$message.success('删除成功');
           } else if (res.data.status_code == 400) {
             this.$message.warning('信息错误，请重试...');
-          } else if (res.data.status_code == 401) {
-            this.$message.warning('请重新登录...');
           } else if (res.data.status_code == 403) {
             this.$message.warning('任务已被完成');
           } else if (res.data.status_code == 404) {
@@ -158,7 +162,14 @@ export default {
             this.$message.error('服务器错误...请稍后重试');
           }
         }).catch((err) => {
+          if (err.response.status == 401) {
+            this.$message.error('请重新登录');
+            setTimeout(() => {
+              this.$router.push('/');
+            }, 1000);
+          } else {
           this.$message.error('服务器错误...请稍后重试');
+          }
         });
       }).catch(() => {
         // do nothing and quit

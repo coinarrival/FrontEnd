@@ -113,9 +113,16 @@ export default {
                  this.$message.error('错误：未知的服务端错误');
                }
              })
-             .catch(error => {
+            .catch(error => {
+              if (err.response.status == 401) {
+                this.$message.error('请重新登录');
+                setTimeout(() => {
+                  this.$router.push('/');
+                }, 1000);
+              } else {
                this.$message.error('错误：未知的服务端错误');
-             })
+              }
+            })
          } else {
            console.log('invalid submit!!');
            return;

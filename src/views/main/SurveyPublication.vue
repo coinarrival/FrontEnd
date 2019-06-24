@@ -144,9 +144,6 @@ export default {
               case 400:
                 this.$message.error('错误：网页运行异常');
                 break;
-              case 401:
-                this.$message.warning('创建失败：登陆失效，请重新登录');
-                break;
               case 403:
                 this.$message.warning('创建失败：余额不足');
                 break;
@@ -158,7 +155,14 @@ export default {
           }
         })
         .catch(error => {
-          this.$message.error('错误：未知的服务端错误');
+          if (err.response.status == 401) {
+            this.$message.error('创建失败：登陆失效，请重新登录');
+            setTimeout(() => {
+              this.$router.push('/');
+            }, 1000);
+          } else {
+            this.$message.error('错误：未知的服务端错误');
+          }
         })
     },
 
