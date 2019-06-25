@@ -224,7 +224,7 @@ export default {
         major: '',
         age: '',
         role: '',
-        avatar: 'avatar2.png',
+        avatar: 'avatar2',
       },
       // student info
       studentInfo: {
@@ -256,9 +256,9 @@ export default {
           this.basicInfo.age = res.data.data.age;
           this.basicInfo.role = res.data.data.role;
           if (res.data.data.avatar) {
-            this.basicInfo.avata = res.data.data.avatar;
+            this.basicInfo.avatar = res.data.data.avatar;
           } else {
-            this.basicInfo.avata = 'avatar2.jpg';
+            this.basicInfo.avatar = 'avatar2';
           }
           if (this.basicInfo.role == 'student') {
             this.studentInfo.studentID = res.data.data.studentID;

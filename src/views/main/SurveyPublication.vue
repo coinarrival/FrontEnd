@@ -155,13 +155,13 @@ export default {
           }
         })
         .catch(error => {
-          if (err.response && err.response.status == 401) {
+          if (error.response && error.response.status == 401) {
             this.$message.error('创建失败：登陆失效，请重新登录');
             setTimeout(() => {
               this.$router.push('/');
             }, 1000);
           } else {
-            this.$message.error('错误：未知的服务端错误');
+            console.log(error);
           }
         })
     },

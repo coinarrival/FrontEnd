@@ -21,16 +21,16 @@
       </el-table-column>
       <el-table-column prop="state" label="操作" align="center" width="200px">
         <template slot-scope="scope">
-          <!-- TODO: 更改判断条件 -->
           <el-button-group>
-            <el-button type="success" :disabled="opeartionPermission(scope.row.state)" @click.stop="showVerifyDialog(scope.row)">认证完成
+            <el-button type="success" :disabled="opeartionPermission(scope.row.state)" @click.stop="showVerifyDialog(scope.row)">
+              {{ scope.row.type == 'survey' ? '查看结果' : '认证完成' }}
             </el-button>
             <el-button type="danger" :disabled="opeartionPermission(scope.row.state)" @click.stop="deleteTask(scope.row)">删除</el-button>
           </el-button-group>
         </template>
       </el-table-column>
     </el-table>
-    <el-pagination background layout="prev, pager, next, jumper" :page-count="createdPages" :pager-count="7"
+    <el-pagination background layout="prev, pager, next, jumper" :page-count="createdPages" :pager-count="5"
       @current-change="handleCreatedPageChange">
     </el-pagination>
 
@@ -76,13 +76,18 @@
         </el-table-column>
         <el-table-column prop="isFinished" label="操作" align="center">
           <template slot-scope="scope">
-            <el-button :disabled="scope.row.isFinished" :type="scope.row.isFinished ? 'info' :'success'"
+            <el-button v-if="verifyTaskType != 'survey'"
+              :disabled="scope.row.isFinished"
+              :type="scope.row.isFinished ? 'info' :'success'"
               @click="verfiyTask(scope.$index, scope.row)">认证完成
+            </el-button>
+            <el-button v-else type="success"
+              @click="checkSurvey(scope.$index, scope.row)">下载问卷
             </el-button>
           </template>
         </el-table-column>
       </el-table>
-      <el-pagination background layout="prev, pager, next, jumper" :page-count="acceptUserListPage" :pager-count="7"
+      <el-pagination background layout="prev, pager, next, jumper" :page-count="acceptUserListPage" :pager-count="5"
       @current-change="handleUserListPageChange">
     </el-pagination>
     </el-dialog>
@@ -123,6 +128,7 @@ export default {
       // verfication variable
       verifyTaskVisible: false,
       verifyTaskID: '',
+      verifyTaskType: '',
       acceptUserListPage: 10,
       acceptUserList: [],
 
@@ -173,10 +179,10 @@ export default {
               element.state = '可承接';
             }
           });
-          this.createdPages = res.data.max_pages;
+          this.createdPages = res.data.data.max_pages;
         } else if (res.data.status_code == 416) {
           this.$message.error('暂无更多数据');
-          this.createdPages = res.data.max_pages;
+          this.createdPages = res.data.data.max_pages;
         } else {
           this.$message.error('请求任务数据错误');
         }
@@ -346,6 +352,7 @@ export default {
     // store the selected task id
     showVerifyDialog(row) {
       this.verifyTaskID = row.taskID;
+      this.verifyTaskType = row.type;
       this.loadAcceptUserList(1);
       this.verifyTaskVisible = true;
     },
@@ -392,6 +399,27 @@ export default {
         // quit and do nothing
       });
     },
+
+    // download survey
+    checkSurvey(index, row) {
+      let tempElement = document.createElement('a'); // temp element for downloading file
+      let surveyAnswer = []; // reformat the survey form to readbale json
+      JSON.parse(row.answer).forEach((element) => {
+        surveyAnswer.push({
+          question: element.name,
+          answer: element.value
+        });
+      });
+      tempElement.setAttribute('href', 'data:text/plain;charset=utf-8,' + JSON.stringify({
+        username: row.userID,
+        answer: surveyAnswer
+      }));
+      tempElement.setAttribute('download', + new Date() + ".json");
+      tempElement.style.display = 'none';
+      document.body.appendChild(tempElement);
+      tempElement.click();
+      document.body.removeChild(tempElement);
+    },
     
     // judge operation permission
     opeartionPermission(value) {
@@ -401,6 +429,7 @@ export default {
     // reset the selected verfity task id
     resetSelected() {
       this.verifyTaskID = '';
+      this.acceptUserList = [];
     },
 
     // change created task list page

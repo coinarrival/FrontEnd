@@ -20,12 +20,11 @@
       </el-table-column>
       <el-table-column prop="state" label="操作" align="center" width="150px">
         <template slot-scope="scope">
-          <!-- TODO: 更改判断条件 -->
           <el-button type="danger" :disabled="scope.row.state !== '可承接'" @click.stop="cancelTask(scope.row)">放弃任务</el-button>
         </template>
       </el-table-column>
     </el-table>
-    <el-pagination background layout="prev, pager, next, jumper" :page-count="acceptPages" :pager-count="7"
+    <el-pagination background layout="prev, pager, next, jumper" :page-count="acceptPages" :pager-count="5"
       @current-change="handleAcceptPageChange">
     </el-pagination>
   </div>
@@ -88,10 +87,10 @@ export default {
               element.state = '可承接';
             }
           });
-          this.acceptPages = res.data.max_pages;
+          this.acceptPages = res.data.data.max_pages;
         } else if (res.data.status_code == 416) {
           this.$message.error('暂无更多数据');
-          this.acceptPages = res.data.max_pages;
+          this.acceptPages = res.data.data.max_pages;
         } else {
           this.$message.error('请求任务数据错误');
         }

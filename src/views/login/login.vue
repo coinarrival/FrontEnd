@@ -182,9 +182,8 @@ export default {
 	    }
 	  },
 
-	  // 如果获取cookie成功，则跳转到主页，无需登录
 	  mounted() {
-	    // TODO: cookie
+	    // TODO: 持久化登陆
 	    if (getCookie(`${Config.jwtKey}`)) {
 	      this.$router.push('/home');
 	    }

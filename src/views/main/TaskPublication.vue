@@ -120,7 +120,7 @@ export default {
                   this.$router.push('/');
                 }, 1000);
               } else {
-               this.$message.error('错误：未知的服务端错误');
+                console.log(error);
               }
             })
          } else {

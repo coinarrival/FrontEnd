@@ -34,7 +34,7 @@
         </el-table>
       </el-row>
       <el-row>
-        <el-pagination background layout="prev, pager, next, jumper" :page-count="maxPages" :pager-count="7"
+        <el-pagination background layout="prev, pager, next, jumper" :page-count="maxPages" :pager-count="5"
           @current-change="handlePageChange">
         </el-pagination>
       </el-row>
@@ -60,7 +60,7 @@
         </el-form-item>
         <el-form-item v-for="(question, index) in taskInfo.questions" :label="question.name" :key="question.key"
           :prop="taskInfo.questions[index].value" :rules="{ required: question.require, message: '', trigger: 'blur' }">
-          <el-input v-model="question.value"></el-input>
+          <el-input v-model="question.value" @input="update"></el-input>
         </el-form-item>
       </el-form>
       <div class="taskDetail" v-if="taskInfo.type === 'normal'">
@@ -102,7 +102,12 @@ export default {
         deadline: '',
         repeatTime: '',
         isCompleted: '',
-        questions: [],
+        questions: [{
+          name: '',
+          key: '',
+          value: '',
+          require: ''
+        }],
       },
 
       // type filter variable
@@ -155,10 +160,10 @@ export default {
               element.state = '可承接';
             }
           });
-          this.maxPages = res.data.max_pages;
+          this.maxPages = res.data.data.max_pages;
         } else if (res.data.status_code == 416) {
           this.$message.error('暂无更多数据');
-          this.maxPages = res.data.max_pages;
+          this.maxPages = res.data.data.max_pages;
         } else {
           this.$message.error('请求任务数据错误');
         }
@@ -183,8 +188,7 @@ export default {
      * @param {object} event click event
      */
     taskClick(row, column, event) {
-      // TODO: 处理问卷类型内容
-      // ? Maybe solved
+      // ? Maybe solved survey data
       this.axios.get(`${Config.serverendURL}/task`, {
         params: {
           'taskID': row.taskID
@@ -195,6 +199,7 @@ export default {
           if (this.taskInfo.type === 'survey') {
             this.taskInfo.questions = JSON.parse(this.taskInfo.content);
           }
+          window.testQuestions = this.taskInfo;
           this.taskDetailVisible = true;
         } else if (res.data.status_code == 404) {
           this.$message.error('任务已删除');
@@ -286,7 +291,7 @@ export default {
             'taskID': this.taskInfo.taskID,
             'answer': JSON.stringify(this.taskInfo.questions),
           };
-          this.axios.post(`${this.serverendURL}/accepted_tasks`, request_body)
+          this.axios.post(`${Config.serverendURL}/accepted_tasks`, request_body)
             .then(response => {
               if (response.status == 200) {
                 switch(response.data.status_code) {
@@ -311,7 +316,7 @@ export default {
               }
             })
             .catch(error => {
-              if (err.response && err.response.status == 401) {
+              if (error.response && error.response.status == 401) {
                 this.$message.error('提交失败：登陆失效，请重新登录');
                 setTimeout(() => {
                   this.$router.push('/');
@@ -322,7 +327,11 @@ export default {
             })
         }
       })
-    }
+    },
+
+    update() {
+      this.$forceUpdate();
+    },
   }
 }
 </script>
