@@ -185,7 +185,7 @@ export default {
 	  // 如果获取cookie成功，则跳转到主页，无需登录
 	  mounted() {
 	    // TODO: cookie
-	    if (getCookie('username')) {
+	    if (getCookie(`${Config.jwtKey}`)) {
 	      this.$router.push('/home');
 	    }
 
@@ -212,12 +212,11 @@ export default {
 	          }).then((res) => {
 	            if (res.data.status_code == 200) {
 								this.$message.success('登陆成功');
-	              setCookie('username', this.username, 1000 * 60);
 	              setTimeout(function () {
 	                this.$router.push({
-	                  path: 'home',
+	                  path: 'main',
 	                  query: {
-	                    id: 1
+	                    username: this.loginForm.username
 	                  }
 	                })
 	              }.bind(this), 1000);
@@ -248,7 +247,7 @@ export default {
 	    register() {
 	      this.$refs['registrationForm'].validate((valid) => {
 	        if (valid) {
-						this.axios.post(this.serverendURL + '/registration', {
+						this.axios.post(`${Config.serverendURL}/registration`, {
 							username: this.registrationForm.newUsername,
 							password: this.registrationForm.newPassword,
 							email: this.registrationForm.newEmail,

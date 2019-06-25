@@ -82,6 +82,9 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination background layout="prev, pager, next, jumper" :page-count="acceptUserListPage" :pager-count="7"
+      @current-change="handleUserListPageChange">
+    </el-pagination>
     </el-dialog>
   </div>
 
@@ -98,80 +101,30 @@ export default {
   },
   data() {
     return {
-      // TODO: delete the static data once server on
       // created task list variable
       createdPages: 10,
-      createdList: [{
-        taskID: "123",
-        title: '取快递',
-        type: "EXAMPLE",
-        reward: 123.123,
-        deadline: "YYYY-MM-DD",
-        repeatTime: 15,
-        state: '已过期'
-      }, {
-        taskID: "123",
-        title: '《计算机网络》第六版PDF',
-        type: "EXAMPLE",
-        reward: 123.123,
-        deadline: "YYYY-MM-DD",
-        repeatTime: 15,
-        state: '可承接'
-      }, {
-        taskID: "123",
-        title: '取快递2',
-        type: "EXAMPLE",
-        reward: 123.123,
-        deadline: "YYYY-MM-DD",
-        repeatTime: 15,
-        state: '已完成'
-      }],
+      createdList: [],
 
-      // TODO: delete the static data once server on
       // task info variable
       taskDetailVisible: false,
-      // taskInfo: {
-      //   id: "",
-      //   title: "EXAMPLE",
-      //   content: "EXAMPLE",
-      //   type: "EXAMPLE",
-      //   issuer: "EXAMPLE",
-      //   reward: 999.999,
-      //   deadline: "2019-6-10",
-      //   repeatTime: 15,
-      //   isCompleted: false
-      // },
-
-      // task example of survey type
       taskInfo: {
-        id: "",
-        title: "EXAMPLE",
-        content: "EXAMPLE",
-        questions: [{
-          name: '123',
-          require: true,
-          value: '',
-          key: Date.now()
-        }],
-        type: "survey",
-        issuer: "EXAMPLE",
-        reward: 999.999,
-        deadline: "2019-6-10",
-        repeatTime: 15,
-        isCompleted: false
+        taskID: '',
+        title: '',
+        content: '',
+        type: '',
+        issuer: '',
+        reward: '',
+        deadline: '',
+        repeatTime: '',
+        isCompleted: '',
+        questions: [],
       },
 
-      // TODO: delete the static data once server on
       // verfication variable
       verifyTaskVisible: false,
       verifyTaskID: '',
-      acceptUserList: [{
-        userID: '123',
-        isFinished: false
-      }, {
-        userID: '111',
-        isFinished: true
-      }],
+      acceptUserListPage: 10,
+      acceptUserList: [],
 
       pickerOptions: {
         disabledDate(time) {
@@ -210,11 +163,11 @@ export default {
         }
       }).then((res) => {
         if (res.data.status_code == 200) {
-          this.createdList = res.data.tasks;
+          this.createdList = res.data.data.tasks;
           this.createdList.forEach(element => {
             if (new Date(element.deadline) < new Date()) {
               element.state = '已过期';
-            } else if (element.isCompleted){
+            } else if (element.isCompleted || element.repeatTime == 0){
               element.state = '已完成';
             } else {
               element.state = '可承接';
@@ -222,13 +175,13 @@ export default {
           });
           this.createdPages = res.data.max_pages;
         } else if (res.data.status_code == 416) {
-          this.$message.error('请求任务数据错误');
+          this.$message.error('暂无更多数据');
           this.createdPages = res.data.max_pages;
         } else {
           this.$message.error('请求任务数据错误');
         }
       }).catch((err) => {
-        if (err.response.status == 401) {
+        if (err.response && err.response.status == 401) {
           this.$message.error('请重新登录');
           setTimeout(() => {
             this.$router.push('/');
@@ -255,6 +208,14 @@ export default {
           if (this.taskInfo.type === 'survey') {
             this.taskInfo.questions = JSON.parse(this.taskInfo.content);
           }
+          if (new Date(this.taskInfo.deadline) < new Date()) {
+            this.taskInfo.state = '已过期';
+          } else if (this.taskInfo.isCompleted){
+            this.taskInfo.state = '已完成';
+          } else {
+            this.taskInfo.state = '可承接';
+          }
+          this.taskInfo.taskID = row.taskID;
         } else if (res.data.status_code == 404) {
           this.$message.error('任务已删除');
         } else {
@@ -262,7 +223,7 @@ export default {
         }
         this.taskDetailVisible = true;
       }).catch((err) => {
-        if (err.response.status == 401) {
+        if (err.response && err.response.status == 401) {
           this.$message.error('请重新登录');
           setTimeout(() => {
             this.$router.push('/');
@@ -271,15 +232,11 @@ export default {
           this.$message.error('服务器错误...请稍后重试');
         }
       });
-      // TODO: delete code once server on
-      this.taskInfo.title = row.title;
-      this.taskInfo.state = row.state;
-      this.taskDetailVisible = true;
     },
 
     // update task
     updateTask() {
-      this.axios.post(`${Config.serverendURL}/created_task`, {
+      this.axios.post(`${Config.serverendURL}/created_tasks`, {
         "taskID": this.taskInfo.taskID,
         "title": this.taskInfo.title,
         "reward": this.taskInfo.reward,
@@ -293,7 +250,7 @@ export default {
           this.$message.error('服务器错误...请稍后重试');
         }
       }).catch((err) => {
-        if (err.response.status == 401) {
+        if (err.response && err.response.status == 401) {
           this.$message.error('请重新登录');
           setTimeout(() => {
             this.$router.push('/');
@@ -338,7 +295,7 @@ export default {
             this.$message.error('服务器错误...请稍后重试');
           }
         }).catch((err) => {
-          if (err.response.status == 401) {
+          if (err.response && err.response.status == 401) {
             this.$message.error('请重新登录');
             setTimeout(() => {
               this.$router.push('/');
@@ -352,11 +309,49 @@ export default {
       });
     },
 
+    // load accept user list page from server
+    loadAcceptUserList(page) {
+      this.axios.get(`${Config.serverendURL}/acceptance`, {
+        params: {
+          taskID: this.verifyTaskID,
+          page: page
+        }
+      }).then(res => {
+        if (res.data.status_code == 200) {
+          this.acceptUserList = res.data.data.records;
+          this.acceptUserListPage = res.data.data.max_pages;
+        } else if (res.data.status_code == 400) {
+          this.$message.error('信息不全，请重试');
+        } else if (res.data.status_code == 401) {
+          this.$message.warning('身份验证失败');
+        } else if (res.data.status_code == 404) {
+          this.$message.error('任务不存在...');
+        } else if (res.data.status_code == 416) {
+          this.$message.error('暂无更多数据');
+          this.acceptUserListPage = res.data.data.max_pages;
+        }
+      }).catch(err => {
+        if (err.response && err.response.status == 401) {
+          this.$message.error('请重新登录');
+          setTimeout(() => {
+            this.$router.push('/');
+          }, 1000);
+        } else {
+          this.$message.error('服务器错误...请稍后重试');
+        }
+      });
+    },
+
     // show verify task dialog and 
     // store the selected task id
     showVerifyDialog(row) {
       this.verifyTaskID = row.taskID;
+      this.loadAcceptUserList(1);
       this.verifyTaskVisible = true;
+    },
+
+    handleUserListPageChange(pageNum) {
+      this.loadAcceptUserList(pageNum);
     },
 
     /**
@@ -364,17 +359,15 @@ export default {
      * 
      * @param {object} row the verified task row with its info
      */
-    verfiyTask(row) {
+    verfiyTask(index, row) {
       this.$confirm('是否确认完成', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         roundButton: true,
       }).then(() => { // verify the task
         this.axios.post(`${Config.serverendURL}/acceptance`, {
-          params: {
-            'taskID': this.verifyTaskID,
-            'userID': row.userID
-          }
+          'taskID': this.verifyTaskID,
+          'userID': row.userID
         }).then((res) => {
           if (res.data.status_code == 200) {
             this.$message.success('删除成功');
@@ -386,7 +379,7 @@ export default {
             this.$message.error('服务器错误...请稍后重试');
           }
         }).catch((err) => {
-          if (err.response.status == 401) {
+          if (err.response && err.response.status == 401) {
             this.$message.error('请重新登录');
             setTimeout(() => {
               this.$router.push('/');

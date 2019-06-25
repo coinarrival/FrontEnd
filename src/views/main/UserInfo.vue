@@ -3,13 +3,12 @@
     <!-- 用户头像 -->
     <el-upload
       :class="basicInfo.avatar? 'avatar' : 'avatar-uploader'"
-      :action="serverendURL/avatar"
+      :action="serverendURL + '/avatar'"
       :show-file-list="false"
       :on-success="handleAvatarSuccess"
       :before-upload="beforeAvatarUpload">
-      <!-- TODO: change to below comment line once server on -->
-      <!-- <img v-if="basicInfo.avatar" :src="serverendURL + '/public/avatar/' + basicInfo.avatar" class="avatar"> -->
-      <img v-if="basicInfo.avatar" :src="basicInfo.avatar" class="avatar">
+      <img v-if="basicInfo.avatar" :src="serverendURL + '/public/avatar/' + basicInfo.avatar + '.jpg'" class="avatar">
+      <!-- <img v-if="basicInfo.avatar" :src="basicInfo.avatar" class="avatar"> -->
       <i v-else class="el-icon-plus avatar-uploader-icon"></i>
     </el-upload>
 
@@ -135,7 +134,7 @@ import {
 
 export default {
   name: 'UserInfo',
-  props: {},
+  props: ['username'],
   mounted() {
     this.loadInfo();
   },
@@ -216,25 +215,25 @@ export default {
   
       // basic info for all role users
       basicInfo: {
-        username: '佚名',
-        gender: 'male',
-        email: 'falsemail@gmail.com',
-        phone: '13231987429',
-        school: 'SYSU',
-        major: 'Software Engineer',
-        age: 18,
-        role: 'student',
-        password: '123456789',
-        avatar: 'https://cube.elemecdn.com/6/94/4d3ea53c084bad6931a56d5158a48jpeg.jpeg'
+        username: this.username,
+        userID: '',
+        gender: '',
+        email: '',
+        phone: '',
+        school: '',
+        major: '',
+        age: '',
+        role: '',
+        avatar: 'avatar2.png',
       },
       // student info
       studentInfo: {
-        grade: '2016',
-        studentID: '16340000'
+        studentID: '',
+        grade: ''
       },
       // teacher info
       teacherInfo: {
-        teacherID: '20000000'
+        teacherID: '',
       }
     }
   },
@@ -243,7 +242,7 @@ export default {
     loadInfo() {
       this.axios.get(`${Config.serverendURL}/account_info`, {
         params: {
-          'username': getCookie('username')
+          'username': this.basicInfo.username
         }
       }).then((res) => {
         if (res.data.status_code == 200) {
@@ -256,7 +255,11 @@ export default {
           this.basicInfo.major = res.data.data.major;
           this.basicInfo.age = res.data.data.age;
           this.basicInfo.role = res.data.data.role;
-          this.basicInfo.avata = res.data.data.avatar;
+          if (res.data.data.avatar) {
+            this.basicInfo.avata = res.data.data.avatar;
+          } else {
+            this.basicInfo.avata = 'avatar2.jpg';
+          }
           if (this.basicInfo.role == 'student') {
             this.studentInfo.studentID = res.data.data.studentID;
             this.studentInfo.grade = res.data.data.grade;
@@ -271,7 +274,7 @@ export default {
           this.$message.error('请求错误');
         }
       }).catch((err) => {
-        if (err.response.status == 401) {
+        if (err.response && err.response.status == 401) {
           this.$message.error('请重新登录');
           setTimeout(() => {
             this.$router.push('/');
@@ -296,10 +299,10 @@ export default {
             school: this.basicInfo.school,
             major: this.basicInfo.major,
             age: this.basicInfo.age,
+            avatar: this.basicInfo.avatar,
             studentID: this.studentInfo.studentID,
             grade: this.studentInfo.grade,
             teacherID: this.teacherInfo.teacherID,
-            avatar: this.basicInfo.avatar
           }) .then((res) => {
             if (res.data.status_code === 201) {
               this.$message.success('更新成功');
@@ -308,8 +311,8 @@ export default {
             } else {
               this.$message.error('服务器错误...请稍后重试');
             }
-          }).catch((err) => { 
-            if (err.response.status == 401) {
+          }).catch((err) => {
+            if (err.response && err.response.status == 401) {
               this.$message.error('请重新登录');
               setTimeout(() => {
                 this.$router.push('/');
@@ -324,9 +327,9 @@ export default {
       });
     },
 
-    uploadAhandleAvatarSuccess(res, file) {
+    handleAvatarSuccess(res, file) {
       if (res.status_code == 200) {
-        this.basicInfo.avatar = res.data.data.filename;
+        this.basicInfo.avatar = res.data.filename;
       } else if (res.status_code == 400) {
         this.message.warning('图片错误');
       } else if (res.status_code == 401) {

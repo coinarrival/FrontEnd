@@ -155,7 +155,7 @@ export default {
           }
         })
         .catch(error => {
-          if (err.response.status == 401) {
+          if (err.response && err.response.status == 401) {
             this.$message.error('创建失败：登陆失效，请重新登录');
             setTimeout(() => {
               this.$router.push('/');

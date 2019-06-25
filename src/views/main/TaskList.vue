@@ -59,7 +59,7 @@
           <el-input-number v-model="taskInfo.repeatTime" controls-position="right" disabled></el-input-number>
         </el-form-item>
         <el-form-item v-for="(question, index) in taskInfo.questions" :label="question.name" :key="question.key"
-          :prop="taskInfo.questions[index].name" :rules="{ required: question.require, message: '', trigger: 'blur' }">
+          :prop="taskInfo.questions[index].value" :rules="{ required: question.require, message: '', trigger: 'blur' }">
           <el-input v-model="question.value"></el-input>
         </el-form-item>
       </el-form>
@@ -85,69 +85,24 @@ export default {
   },
   data() {
     return {
-      // TODO: delete the static data once server on
       // task list variable
       maxPages: 10,
       selectedTaskID: '',
-      taskList: [{
-        taskID: "123",
-        title: '取快递',
-        type: "normal",
-        issuer: "EXAMPLE",
-        reward: 123.123,
-        deadline: "YYYY-MM-DD",
-        repeatTime: 15,
-        state: '已过期'
-      }, {
-        taskID: "123",
-        title: '《计算机网络》第六版PDF',
-        type: "normal",
-        issuer: "EXAMPLE",
-        reward: 123.123,
-        deadline: "YYYY-MM-DD",
-        repeatTime: 15,
-        state: '可承接'
-      }, {
-        taskID: "123",
-        title: '行人数据',
-        type: "survey",
-        issuer: "EXAMPLE",
-        reward: 123.123,
-        deadline: "YYYY-MM-DD",
-        repeatTime: 15,
-        state: '已过期'
-      }, {
-        taskID: "123",
-        title: '送钱',
-        type: "normal",
-        issuer: "EXAMPLE",
-        reward: 123.123,
-        deadline: "YYYY-MM-DD",
-        repeatTime: 15,
-        state: '可承接'
-      }],
+      taskList: [],
 
-      // TODO: delete the static data once server on
       // task detail variable
       taskDetailVisible: false,
       taskInfo: {
-        id: "",
-        title: "EXAMPLE",
-        content: `EXAMPLE`,
-        questions: [
-          {
-            'name': '123',
-            'required': true,
-            'value': '',
-            'key': 1561213153728,
-          }
-        ],
-        type: "EXAMPLE",
-        issuer: "EXAMPLE",
-        reward: 999.999,
-        deadline: "YYYY-MM-DD",
-        repeatTime: 15,
-        isCompleted: false
+        taskID: '',
+        title: '',
+        content: '',
+        type: '',
+        issuer: '',
+        reward: '',
+        deadline: '',
+        repeatTime: '',
+        isCompleted: '',
+        questions: [],
       },
 
       // type filter variable
@@ -190,11 +145,11 @@ export default {
         }
       }).then((res) => {
         if (res.data.status_code == 200) {
-          this.taskList = res.data.tasks;
+          this.taskList = res.data.data.tasks;
           this.taskList.forEach(element => {
             if (new Date(element.deadline) < new Date()) {
               element.state = '已过期';
-            } else if (element.isCompleted){
+            } else if (element.isCompleted || element.repeatTime == 0){
               element.state = '已完成';
             } else {
               element.state = '可承接';
@@ -202,13 +157,13 @@ export default {
           });
           this.maxPages = res.data.max_pages;
         } else if (res.data.status_code == 416) {
-          this.$message.error('请求任务数据错误');
+          this.$message.error('暂无更多数据');
           this.maxPages = res.data.max_pages;
         } else {
           this.$message.error('请求任务数据错误');
         }
       }).catch((err) => {
-        if (err.response.status == 401) {
+        if (err.response && err.response.status == 401) {
           this.$message.error('请重新登录');
           setTimeout(() => {
             this.$router.push('/');
@@ -230,7 +185,7 @@ export default {
     taskClick(row, column, event) {
       // TODO: 处理问卷类型内容
       // ? Maybe solved
-      this.axios.get(`${this.serverendURL}/task`, {
+      this.axios.get(`${Config.serverendURL}/task`, {
         params: {
           'taskID': row.taskID
         }
@@ -240,15 +195,16 @@ export default {
           if (this.taskInfo.type === 'survey') {
             this.taskInfo.questions = JSON.parse(this.taskInfo.content);
           }
-
+          this.taskDetailVisible = true;
         } else if (res.data.status_code == 404) {
           this.$message.error('任务已删除');
         } else {
           this.$message.error('服务器错误...请稍后重试');
         }
-        })
+        this.taskInfo.taskID = row.taskID;
+      })
       .catch((err) => {
-        if (err.response.status == 401) {
+        if (err.response && err.response.status == 401) {
           this.$message.error('请重新登录');
           setTimeout(() => {
             this.$router.push('/');
@@ -257,10 +213,6 @@ export default {
           this.$message.error('服务器错误...请稍后重试');
         }    
       });
-      // TODO: delete the static data once server on
-      this.taskDetailVisible = true;
-      this.taskInfo.title = row.title;
-      this.taskInfo.isCompleted = (row.state != '可承接');
     },
 
     /**
@@ -287,9 +239,9 @@ export default {
       this.$refs['taskInfo'].validate(valid => {
         if (valid) {
           let request_body = {
-            'taskID': this.taskInfo.id,
+            'taskID': this.taskInfo.taskID,
           };
-          this.axios.post(`${this.serverendURL}/accepted_tasks`, request_body)
+          this.axios.post(`${Config.serverendURL}/accepted_tasks`, request_body)
             .then(response => {
               if (response.status == 200) {
                 switch(response.data.status_code) {
@@ -314,7 +266,7 @@ export default {
               }
             })
             .catch(error => {
-              if (err.response.status == 401) {
+              if (err.response && err.response.status == 401) {
                 this.$message.error('提交失败：登陆失效，请重新登录');
                 setTimeout(() => {
                   this.$router.push('/');
@@ -331,7 +283,7 @@ export default {
       this.$refs['taskInfo'].validate(valid => {
         if (valid) {
           let request_body = {
-            'taskID': this.taskInfo.id,
+            'taskID': this.taskInfo.taskID,
             'answer': JSON.stringify(this.taskInfo.questions),
           };
           this.axios.post(`${this.serverendURL}/accepted_tasks`, request_body)
@@ -359,7 +311,7 @@ export default {
               }
             })
             .catch(error => {
-              if (err.response.status == 401) {
+              if (err.response && err.response.status == 401) {
                 this.$message.error('提交失败：登陆失效，请重新登录');
                 setTimeout(() => {
                   this.$router.push('/');

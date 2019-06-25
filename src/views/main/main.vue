@@ -22,7 +22,7 @@
 			</el-tab-pane>
 
 			<el-tab-pane label="个人信息">
-				<user-info v-if="currentTabIndex == 5"></user-info>
+				<user-info v-if="currentTabIndex == 5" :username="this.$route.query.username"></user-info>
 			</el-tab-pane>
 		</el-tabs>
 	</div>
@@ -65,6 +65,7 @@ export default{
 	},
 	methods: { 
 		tabChange(tab, event) {
+			console.log(this.$route.query.username);
 			this.currentTabIndex = tab.index;
 		}
 	}

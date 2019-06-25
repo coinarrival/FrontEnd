@@ -43,34 +43,9 @@ export default {
   },
   data() {
     return {
-      // TODO: delete the static data once server on
       // accept task list variable
       acceptPages: 10,
-      acceptList: [{
-        taskID: "123",
-        title: '取快递',
-        type: "EXAMPLE",
-        issuer: "EXAMPLE",
-        reward: 123.123,
-        deadline: "YYYY-MM-DD",
-        state: '已过期'
-      }, {
-        taskID: "123",
-        title: '《计算机网络》第六版PDF',
-        type: "EXAMPLE",
-        issuer: "EXAMPLE",
-        reward: 123.123,
-        deadline: "YYYY-MM-DD",
-        state: '可承接'
-      }, {
-        taskID: "123",
-        title: '行人数据',
-        type: "EXAMPLE",
-        issuer: "EXAMPLE",
-        reward: 123.123,
-        deadline: "YYYY-MM-DD",
-        state: '已完成'
-      }],
+      acceptList: [],
 
       // filter variable
       stateFilters: [{
@@ -103,25 +78,25 @@ export default {
         }
       }).then((res) => {
         if (res.data.status_code == 200) {
-          this.createdList = res.data.tasks;
-          this.createdList.forEach(element => {
+          this.acceptList = res.data.data.tasks;
+          this.acceptList.forEach(element => {
             if (new Date(element.deadline) < new Date()) {
               element.state = '已过期';
-            } else if (element.isCompleted){
+            } else if (element.isCompleted || element.repeatTime == 0){
               element.state = '已完成';
             } else {
               element.state = '可承接';
             }
           });
-          this.createdPages = res.data.max_pages;
+          this.acceptPages = res.data.max_pages;
         } else if (res.data.status_code == 416) {
-          this.$message.error('请求任务数据错误');
-          this.createdPages = res.data.max_pages;
+          this.$message.error('暂无更多数据');
+          this.acceptPages = res.data.max_pages;
         } else {
           this.$message.error('请求任务数据错误');
         }
       }).catch((err) => {
-        if (err.response.status == 401) {
+        if (err.response && err.response.status == 401) {
           this.$message.error('请重新登录');
           setTimeout(() => {
             this.$router.push('/');
@@ -162,7 +137,7 @@ export default {
             this.$message.error('服务器错误...请稍后重试');
           }
         }).catch((err) => {
-          if (err.response.status == 401) {
+          if (err.response && err.response.status == 401) {
             this.$message.error('请重新登录');
             setTimeout(() => {
               this.$router.push('/');
@@ -176,7 +151,7 @@ export default {
       });
     },
 
-    // change created task list page
+    // change accept task list page
     handleAcceptPageChange(pageNum) {
       this.loadTaskwithPage(pageNum);
     },

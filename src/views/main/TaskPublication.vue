@@ -89,7 +89,7 @@ export default {
              'content': this.task.description,
              'type': 'normal',
              'reward': this.task.reward,
-             'repeatTime': this.task.repeatTime,
+             'repeatTime': this.task.repeatedTime,
              'deadline': this.task.deadline
            }
            this.axios.post(`${Config.serverendURL}/task`, request_body)
@@ -114,7 +114,7 @@ export default {
                }
              })
             .catch(error => {
-              if (err.response.status == 401) {
+              if (error.response && error.response.status == 401) {
                 this.$message.error('请重新登录');
                 setTimeout(() => {
                   this.$router.push('/');
@@ -129,8 +129,6 @@ export default {
          }
        })
     }
-
-
   }
 }
 </script>
